@@ -7,7 +7,6 @@ struct node
 {
     uint32_t group;
     int timer;
-    int id;
 };
 
 struct group_list 

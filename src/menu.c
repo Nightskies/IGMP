@@ -27,6 +27,8 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
+    accept_query(head);
+/*
     switch(fork())
     {
         case -1:
@@ -43,7 +45,7 @@ void main(int argc, char **argv)
         
     }
 
-
+*/
     close(sfd);
     exit(EXIT_SUCCESS);
 }

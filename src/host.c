@@ -19,7 +19,7 @@ void push(struct host * _host, struct node * data)
         struct group_list * p = _host->head;
 
         while (p->next != NULL)
-        p = p->next;
+            p = p->next;
 
         p->next = tmp;
     } 
@@ -48,7 +48,7 @@ uint32_t get_ip_if_by_name(const char * name)
 
     if(length > sizeof(ifr.ifr_name))
     {
-        printf("Error get_ip_by_name \n");
+        printf("Error get_ip_if_by_name \n");
         exit(EXIT_FAILURE);
     }
 
@@ -79,15 +79,15 @@ struct host * init_host(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    init_sock(_host);
+    
     _host->if_addr = get_ip_if_by_name(argv[argc - 1]);
 
-    init_sock(_host);
-
-    for (int i = 1; i < argc; i++)
+    for (int i = 1; i < argc - 1; i++)
     {
         set_group(argv[i], _host);
-        send_membership_report(_host->if_addr, _host->head[i].data->group);
-        printf("group[%d] = %s\n", i, argv[i]);
+        send_membership_report(_host->if_addr, _host->head->data->group);
+        _host->head = _host->head->next;
     }
 
     return _host;
@@ -95,7 +95,6 @@ struct host * init_host(int argc, char **argv)
 
 void set_group(const char * group_ip, struct host * head)
 {
-    static int id = 1;
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
     {
@@ -105,7 +104,6 @@ void set_group(const char * group_ip, struct host * head)
 
     data->group = parse_to_ip(group_ip);
     data->timer = 0;
-    data->id = id++;
 
     push(head, data);
 }

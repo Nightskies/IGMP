@@ -5,7 +5,7 @@ void send_membership_report(const uint32_t src, const uint32_t group)
 {
     const char * packet;
 
-    struct sockaddr_in dst_addr;
+    struct sockaddr_in dst_addr;//
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
     
     packet = build_packet(src, IGMPV2_HOST_MEMBERSHIP_REPORT, group);
