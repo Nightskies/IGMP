@@ -1,6 +1,6 @@
 #include "../include/igmpv2.h"
 
-const char * build_packet(const uint32_t src, int type, const uint32_t group)
+char * build_packet(const uint32_t src, int type, const uint32_t group)
 {
     char * packet;
     ip * ip_hdr;

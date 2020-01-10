@@ -32,7 +32,7 @@
 typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 
-const char * build_packet(const uint32_t src, int type, const uint32_t group);
+char * build_packet(const uint32_t src, int type, const uint32_t group);
 
 uint16_t build_csum_igmp(uint16_t * addr, int len);
 

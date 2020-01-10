@@ -3,7 +3,7 @@
 
 void send_membership_report(const uint32_t src, const uint32_t group)
 {
-    const char * packet;
+    char * packet;
 
     struct sockaddr_in dst_addr;//
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
@@ -15,6 +15,8 @@ void send_membership_report(const uint32_t src, const uint32_t group)
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("sendto");
+
+    free(packet);
 }
 
 void accept_query(struct host * _host)
@@ -144,7 +146,7 @@ void accept_query(struct host * _host)
 
 void send_leave_group(struct host * _host, const uint32_t group)
 {
-    const char * packet;
+    char * packet;
 
     struct sockaddr_in dst_addr;
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
@@ -157,5 +159,6 @@ void send_leave_group(struct host * _host, const uint32_t group)
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("send_leave_group: sendto");
     
+    free(packet);
     pop(_host, group);
 }
