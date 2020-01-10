@@ -17,24 +17,28 @@ const char * build_packet(const uint32_t src, int type, const uint32_t group)
     memset(ip_hdr, 0 , sizeof(ip));
 
     ip_hdr->version = 4; // Ipv4
-    ip_hdr->ihl = 5;
-    ip_hdr->tos = 0;
+    ip_hdr->ihl = (sizeof(ip) + 4) >> 2; // +4 for Router Alert option
+    ip_hdr->tos = 0xc0; // Internet Control
     ip_hdr->ttl = 1;
-    ip_hdr->tot_len = htons(MIN_IP_LEN + MIN_IGMPV2_LEN);
+    ip_hdr->tot_len = htons(MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN);
     ip_hdr->protocol = IPPROTO_IGMP;
-    ip_hdr->id = 228;
-	ip_hdr->frag_off = 0;
-    ip_hdr->check = 0;
+    ip_hdr->id = 1;
     ip_hdr->saddr = src;
     ip_hdr->daddr = group;
 
+    // Router Alert option
+    ((unsigned char*)packet + MIN_IP_LEN)[0] = IPOPT_RA;
+    ((unsigned char*)packet + MIN_IP_LEN)[1] = 0x04;
+    ((unsigned char*)packet + MIN_IP_LEN)[2] = 0x00;
+    ((unsigned char*)packet + MIN_IP_LEN)[3] = 0x00;
+
     // build igmp packet
-    igmp_hdr = (igmp *)(packet + MIN_IP_LEN);
+    igmp_hdr = (igmp *)(packet + MIN_IP_LEN + RAOPT_LEN);
     igmp_hdr->type = type;
     igmp_hdr->code = 0;
     igmp_hdr->group = group;
     igmp_hdr->csum = 0;
-    igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN);
+    igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN + RAOPT_LEN);
 
     return packet;
 }

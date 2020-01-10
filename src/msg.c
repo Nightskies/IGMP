@@ -13,7 +13,7 @@ void send_membership_report(const uint32_t src, const uint32_t group)
     dst_addr.sin_family = AF_INET;
     dst_addr.sin_addr.s_addr = group;
 
-    if (-1 == sendto(sfd, packet, MIN_IP_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
+    if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("sendto");
 }
 
@@ -29,7 +29,7 @@ void accept_query(struct host * _host)
     socklen_t socklen = sizeof(struct sockaddr_in);
 
     struct sockaddr_in src_addr;
-    memset(&src_addr, 0 , sizeof(struct sockaddr_in));
+    memset(&src_addr, 0 , socklen);
 
     ssize_t nbytes;
 
@@ -47,7 +47,7 @@ void accept_query(struct host * _host)
 
     printf("ip: PACKETSIZE[%zd], saddr[%s]->daddr[%s]\n", nbytes, inet_ntoa(ip_saddr), inet_ntoa(ip_daddr));
 
-    igmp_hdr = (igmp *)(packet + MIN_IP_LEN);
+    igmp_hdr = (igmp *)(packet + MIN_IP_LEN + RAOPT_LEN);
 
     printf("igmp: TYPE[%x], MAX RESPONSE TIME[%d]\n", igmp_hdr->type, igmp_hdr->code);
 
@@ -154,7 +154,7 @@ void send_leave_group(struct host * _host, const uint32_t group)
     dst_addr.sin_family = AF_INET;
     dst_addr.sin_addr.s_addr = INADDR_ALLRTRS_GROUP;
 
-    if (-1 == sendto(sfd, packet, MIN_IP_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
+    if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("send_leave_group: sendto");
     
     pop(_host, group);

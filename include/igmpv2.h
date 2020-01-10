@@ -25,6 +25,7 @@
 
 #define MIN_IGMPV2_LEN 16
 #define MIN_IP_LEN 20
+#define RAOPT_LEN 4
 
 #define BUF_SIZE BUFSIZ
 
