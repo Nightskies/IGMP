@@ -14,9 +14,7 @@ int com_add(char ** args, struct host * _host)
 {
     set_group(args[1], _host);
     printf("added group[%s] \n", args[1]);
-	uint32_t group = parse_to_ip(args[1]);
-
-    send_membership_report(_host->if_addr, group);
+    send_membership_report(_host->if_addr, parse_to_ip(args[1]));
 
 	return 1;
 }
@@ -30,9 +28,25 @@ int com_del(char ** args, struct host * _host)
 
 int com_print(char ** args, struct host * _host)
 {
-    send_leave_group(_host, parse_to_ip(args[1]));
-    printf("leave group[%s] \n", args[1]);
-	return 1;
+	struct group_list * head = NULL;
+
+	struct in_addr addr;
+	addr.s_addr = _host->if_addr;
+
+	int i = 1;
+
+	printf("\n IGMP CLIENT \n");
+	printf("INTERFACE = %s\n",inet_ntoa(addr));
+	printf("list of subscribed groups\n");
+
+	head = _host->head;
+
+    while(head)
+    {
+        addr.s_addr = head->data->group;
+        printf("%d - %s\n",i++,inet_ntoa(addr));
+        head = head->next;
+    }
 }
 
 int com_exit(char ** args, struct host * _host)
