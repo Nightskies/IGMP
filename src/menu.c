@@ -27,6 +27,7 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
+    send_leave_group(head,head->head->data->group);
     //accept_query(head);
 /*
     switch(fork())

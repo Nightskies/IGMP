@@ -143,10 +143,10 @@ void send_leave_group(struct host * _host, const uint32_t group)
     struct sockaddr_in dst_addr;
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
     
-    packet = build_packet(_host->if_addr, IGMP_HOST_LEAVE_MESSAGE, INADDR_ALLRTRS_GROUP);
+    packet = build_packet(_host->if_addr, IGMP_HOST_LEAVE_MESSAGE, parse_to_ip(ALLRTRS_GROUP));
 
     dst_addr.sin_family = AF_INET;
-    dst_addr.sin_addr.s_addr = INADDR_ALLRTRS_GROUP;
+    dst_addr.sin_addr.s_addr = parse_to_ip(ALLRTRS_GROUP);
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         SYS_ERROR("sendto");
