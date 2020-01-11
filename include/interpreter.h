@@ -3,6 +3,7 @@
 
 #include "host.h"
 #include <sys/wait.h>
+#include <signal.h>
 
 #define BUFSIZE 512
 #define TOKENSIZE 64

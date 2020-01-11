@@ -9,12 +9,14 @@ void send_membership_report(const uint32_t src, const uint32_t group)
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
     
     packet = build_packet(src, IGMPV2_HOST_MEMBERSHIP_REPORT, group);
-
+    
     dst_addr.sin_family = AF_INET;
     dst_addr.sin_addr.s_addr = group;
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         SYS_ERROR("sendto");
+
+    printf(STYLE_GREEN_BOLD "sent <membership report> to [%s]\n" STYLE_RESET, inet_ntoa(dst_addr.sin_addr));
     
     free(packet);
 }
@@ -41,15 +43,12 @@ void accept_query(struct host * _host)
     ip_saddr.s_addr = ip_hdr->saddr;
     ip_daddr.s_addr = ip_hdr->daddr;
 
-    printf("ip: PACKETSIZE[%zd], saddr[%s]->daddr[%s]\n", nbytes, inet_ntoa(ip_saddr), inet_ntoa(ip_daddr));
-
     igmp_hdr = (igmp *)(packet + MIN_IP_LEN + RAOPT_LEN);
 
-    printf("igmp: TYPE[%x], MAX RESPONSE TIME[%d]\n", igmp_hdr->type, igmp_hdr->code);
-
     // General query
-    if (ip_hdr->daddr == INADDR_ALLHOSTS_GROUP)
+    if (ip_hdr->daddr == parse_to_ip(ALLHOSTS_GROUP))
     {
+        printf(STYLE_GREEN_BOLD "accept <general query>\n" STYLE_RESET);
         struct group_list * next = NULL;
 
         for (next = _host->head; next != NULL; next = next->next)
@@ -57,6 +56,8 @@ void accept_query(struct host * _host)
             if (next->data->timer == 0)
             {
                 next->data->timer = timer(igmp_hdr->code);
+                printf(STYLE_GREEN_BOLD "Group[%s] set time = %u" STYLE_RESET, 
+                    parse_to_str(next->data->group), next->data->timer);
 
                 // timer
                 switch(fork())
@@ -104,6 +105,8 @@ void accept_query(struct host * _host)
     // General specific query
     else
     {
+        printf(STYLE_GREEN_BOLD "accept <specific query>\n" STYLE_RESET);
+
         struct group_list * next = NULL;
 
         bool flag = true;
@@ -113,6 +116,8 @@ void accept_query(struct host * _host)
             if (ip_hdr->daddr == next->data->group);
             {
                 next->data->timer = timer(igmp_hdr->code);
+                printf(STYLE_GREEN_BOLD "Group[%s] set time = %u" STYLE_RESET, 
+                    parse_to_str(next->data->group), next->data->timer);
 
                 switch(fork())
                 {
@@ -137,7 +142,6 @@ void accept_query(struct host * _host)
 
 void send_leave_group(struct host * _host, const uint32_t group)
 {
-    printf("send leave... \n");
     char * packet = NULL;
 
     struct sockaddr_in dst_addr;
@@ -150,8 +154,9 @@ void send_leave_group(struct host * _host, const uint32_t group)
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         SYS_ERROR("sendto");
+    
+    printf(STYLE_GREEN_BOLD "sent <leave group> to [%s]\n" STYLE_RESET , ALLRTRS_GROUP);
 
     pop(_host, group);
     free(packet);
-    printf("sent leave\n");
 }

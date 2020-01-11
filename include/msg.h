@@ -2,6 +2,7 @@
 #define _MSG_H_
 
 #define ALLRTRS_GROUP "224.0.0.2"
+#define ALLHOSTS_GROUP "224.0.0.1"
 
 #include "host.h"
 

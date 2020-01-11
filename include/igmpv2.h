@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#include <stdio.h>
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -32,8 +30,6 @@ typedef struct igmphdr igmp;
 char * build_packet(const uint32_t src, int type, const uint32_t group);
 
 uint16_t build_csum_igmp(uint16_t * addr, int len);
-
-uint32_t parse_to_ip(const char * address);
 
 uint32_t timer(const unsigned char max_res_time);
 

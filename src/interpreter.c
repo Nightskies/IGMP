@@ -12,17 +12,18 @@ int ncommands(void)
 
 int com_add(char ** args, struct host * _host)
 {
-    set_group(args[1], _host);
-    printf("added group[%s] \n", args[1]);
-    send_membership_report(_host->if_addr, parse_to_ip(args[1]));
+	printf(STYLE_YELLOW_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
 
+    set_group(args[1], _host);
+    send_membership_report(_host->if_addr, parse_to_ip(args[1]));
 	return 1;
 }
 
 int com_del(char ** args, struct host * _host)
 {
+	printf(STYLE_YELLOW_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
+
     send_leave_group(_host, parse_to_ip(args[1]));
-    printf("leave group[%s] \n", args[1]);
 	return 1;
 }
 
@@ -35,7 +36,7 @@ int com_print(char ** args, struct host * _host)
 
 	int i = 1;
 
-	printf("IGMP CLIENT \n");
+	printf(STYLE_BLUE_BOLD "IGMP CLIENT \n");
 	printf("INTERFACE = %s\n",inet_ntoa(addr));
 	printf("list of subscribed groups\n");
 
@@ -44,7 +45,7 @@ int com_print(char ** args, struct host * _host)
     while(head)
     {
         addr.s_addr = head->data->group;
-        printf("%d - %s\n",i++,inet_ntoa(addr));
+        printf("%d - %s\n" STYLE_RESET,i++,inet_ntoa(addr));
         head = head->next;
     }
 
@@ -53,7 +54,11 @@ int com_print(char ** args, struct host * _host)
 
 int com_exit(char ** args, struct host * _host)
 {
+	printf(STYLE_YELLOW_BOLD "exit client\n" STYLE_RESET);
+
     struct group_list * tmp = NULL;
+
+	kill(0,SIGINT);
 
     while (_host->head)
     {
@@ -180,7 +185,7 @@ void act_menu(struct host * _host)
 
 	do
 	{
-		fputs("Enter command > ", stdout);
+		fputs(STYLE_YELLOW_BOLD "Enter command > " STYLE_RESET, stdout);
 		line = read_line();
 		args = parse_line(line);
 		status = exe(args, _host);

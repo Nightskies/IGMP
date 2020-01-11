@@ -36,4 +36,8 @@ void set_group(const char * group_ip, struct host * head);
 // get ip interface by name
 uint32_t get_ip_if_by_name(const char * name);
 
+uint32_t parse_to_ip(const char * address);
+
+char * parse_to_str(uint32_t ip);
+
 #endif // _HOST_H

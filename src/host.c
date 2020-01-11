@@ -54,7 +54,7 @@ uint32_t get_ip_if_by_name(const char * name)
     
     struct sockaddr_in * ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
 
-    printf("IP address: %s\n",inet_ntoa(ipaddr->sin_addr));
+    printf(STYLE_GREEN_BOLD "ip interface [%s]\n" STYLE_RESET, inet_ntoa(ipaddr->sin_addr));
 
     struct in_addr if_addr;
     memset(&if_addr, 0, sizeof(struct in_addr));
@@ -66,6 +66,8 @@ uint32_t get_ip_if_by_name(const char * name)
 
 struct host * init_host(int argc, char **argv)
 {
+    printf (STYLE_GREEN_BOLD "Start init host...\n" STYLE_RESET);
+
     struct host * _host = (struct host *)malloc(sizeof(struct host));
     if (_host == NULL)
         ERROR("malloc returned Null");
@@ -90,11 +92,15 @@ struct host * init_host(int argc, char **argv)
         head = head->next;
     }
 
+    printf (STYLE_GREEN_BOLD "Init host successful...\n" STYLE_RESET);
+
     return _host;
 }
 
 void set_group(const char * group_ip, struct host * head)
 {
+    printf(STYLE_GREEN_BOLD "Set group [%s]\n" STYLE_RESET, group_ip);
+
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
         ERROR("malloc returned Null");
@@ -103,4 +109,24 @@ void set_group(const char * group_ip, struct host * head)
     data->timer = 0;
 
     push(head, data);
+
+    printf(STYLE_GREEN_BOLD "Added group[%s]\n" STYLE_RESET, group_ip);
+}
+
+uint32_t parse_to_ip(const char * address)
+{
+	uint32_t s_addr;
+
+	if (inet_pton(AF_INET, address, &s_addr) < 0)
+        SYS_ERROR("inet_pton");
+
+	return s_addr;
+}
+
+char * parse_to_str(uint32_t ip)
+{
+    struct in_addr addr;
+    addr.s_addr = ip;
+
+    return inet_ntoa(addr);
 }

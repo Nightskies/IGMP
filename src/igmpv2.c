@@ -1,9 +1,8 @@
 #include "../include/igmpv2.h"
+#include "../include/host.h"
 
 char * build_packet(const uint32_t src, int type, const uint32_t group)
 {
-    printf("build start \n");
-
     ip * ip_hdr;
     igmp * igmp_hdr;
 
@@ -39,7 +38,9 @@ char * build_packet(const uint32_t src, int type, const uint32_t group)
     igmp_hdr->csum = 0;
     igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN + RAOPT_LEN);
 
-    printf("build exit \n");
+    printf(STYLE_GREEN_BOLD "built igmp packet [type = 0x%x, code = %d, group = %s, csum = 0x%x]\n" STYLE_RESET, 
+        igmp_hdr->type, igmp_hdr->code, parse_to_str(group), igmp_hdr->csum);
+
     return packet;
 }
 
@@ -66,16 +67,6 @@ uint16_t build_csum_igmp(uint16_t * addr, int len)
     sum += (sum >> 16);
     answer = ~sum;
     return(answer);
-}
-
-uint32_t parse_to_ip(const char * address)
-{
-	uint32_t s_addr;
-
-	if (inet_pton(AF_INET, address, &s_addr) < 0)
-        SYS_ERROR("inet_pton");
-
-	return s_addr;
 }
 
 uint32_t timer(const unsigned char max_res_time)
