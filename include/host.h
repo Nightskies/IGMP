@@ -28,7 +28,7 @@ void push(struct host * head, struct node * data);
 void pop(struct host * head, uint32_t group);
 
 // init host
-struct host * init_host(int argc, char ** argv);
+struct host * init_host(int argc, char ** argv, char * packet);
 
 // init group
 void set_group(const char * group_ip, struct host * head);

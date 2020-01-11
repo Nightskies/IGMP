@@ -1,33 +1,23 @@
 #include "../include/msg.h"
 #include "../include/socket.h"
 
-void send_membership_report(const uint32_t src, const uint32_t group)
+void send_membership_report(const uint32_t src, const uint32_t group, char * packet)
 {
-    char * packet;
-
-    struct sockaddr_in dst_addr;//
+    struct sockaddr_in dst_addr;
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
     
-    packet = build_packet(src, IGMPV2_HOST_MEMBERSHIP_REPORT, group);
+    build_packet(src, IGMPV2_HOST_MEMBERSHIP_REPORT, group, packet);
 
     dst_addr.sin_family = AF_INET;
     dst_addr.sin_addr.s_addr = group;
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("sendto");
-
-    free(packet);
+    printf("gg\n");
 }
 
-void accept_query(struct host * _host)
+void accept_query(struct host * _host, char * packet)
 {
-    char * packet = (char *)malloc(BUF_SIZE);
-    if(packet == NULL)
-    {
-        fprintf(stderr, "accept_query: Error malloc \n");
-        exit(EXIT_FAILURE);
-    }
-
     socklen_t socklen = sizeof(struct sockaddr_in);
 
     struct sockaddr_in src_addr;
@@ -73,7 +63,7 @@ void accept_query(struct host * _host)
                     
                     case 0:
                         sleep(next->data->timer);
-                        send_membership_report(_host->if_addr, next->data->group);
+                        send_membership_report(_host->if_addr, next->data->group, packet);
                         next->data->timer = 0;
                         exit(EXIT_SUCCESS);
 
@@ -95,7 +85,7 @@ void accept_query(struct host * _host)
                     
                     case 0:
                         sleep(next->data->timer);
-                        send_membership_report(_host->if_addr, next->data->group);
+                        send_membership_report(_host->if_addr, next->data->group, packet);
                         next->data->timer = 0;
                         exit(EXIT_SUCCESS);
 
@@ -130,7 +120,7 @@ void accept_query(struct host * _host)
                     
                     case 0:
                         sleep(next->data->timer);
-                        send_membership_report(_host->if_addr, next->data->group);
+                        send_membership_report(_host->if_addr, next->data->group, packet);
                         next->data->timer = 0;
                         exit(EXIT_SUCCESS);
 
@@ -144,21 +134,20 @@ void accept_query(struct host * _host)
     } 
 }
 
-void send_leave_group(struct host * _host, const uint32_t group)
+void send_leave_group(struct host * _host, const uint32_t group, char * packet)
 {
-    char * packet;
-
+    printf("send leave... \n");
     struct sockaddr_in dst_addr;
     memset(&dst_addr, 0 , sizeof(struct sockaddr_in));
     
-    packet = build_packet(_host->if_addr, IGMP_HOST_LEAVE_MESSAGE, INADDR_ALLRTRS_GROUP);
+    build_packet(_host->if_addr, IGMP_HOST_LEAVE_MESSAGE, INADDR_ALLRTRS_GROUP, packet);
 
     dst_addr.sin_family = AF_INET;
     dst_addr.sin_addr.s_addr = INADDR_ALLRTRS_GROUP;
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
         fatal("send_leave_group: sendto");
-    
-    free(packet);
+
     pop(_host, group);
+    printf("sent leave\n");
 }

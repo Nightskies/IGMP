@@ -23,16 +23,16 @@
 
 #include "error.h"
 
-#define MIN_IGMPV2_LEN 16
+#define MIN_IGMPV2_LEN 8
 #define MIN_IP_LEN 20
 #define RAOPT_LEN 4
 
-#define BUF_SIZE BUFSIZ
+#define BUF_SIZE 64
 
 typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 
-char * build_packet(const uint32_t src, int type, const uint32_t group);
+void build_packet(const uint32_t src, int type, const uint32_t group, char * packet);
 
 uint16_t build_csum_igmp(uint16_t * addr, int len);
 

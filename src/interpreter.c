@@ -10,12 +10,12 @@ int ncommands(void)
 	return sizeof(commands_str) / sizeof(char *);
 }
 
-int com_add(char ** args, struct host * _host)
+int com_add(char ** args, struct host * _host, char * packet)
 {
     set_group(args[1], _host);
     printf("added group[%s] \n", args[1]);
 
-    send_membership_report(_host->if_addr, _host->head->data->group);
+    send_membership_report(_host->if_addr, _host->head->data->group, packet);
 
 	return 1;
 }

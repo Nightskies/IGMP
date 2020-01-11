@@ -70,7 +70,7 @@ uint32_t get_ip_if_by_name(const char * name)
     return if_addr.s_addr;
 }
 
-struct host * init_host(int argc, char **argv)
+struct host * init_host(int argc, char **argv, char * packet)
 {
     struct host * _host = (struct host *)malloc(sizeof(struct host));
     if (_host == NULL)
@@ -79,15 +79,24 @@ struct host * init_host(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    init_sock(_host);
-    
+    init_sock();
+
+    struct group_list * head = NULL;
+
     _host->if_addr = get_ip_if_by_name(argv[argc - 1]);
 
+    struct in_addr addr;
+
     for (int i = 1; i < argc - 1; i++)
-    {
         set_group(argv[i], _host);
-        send_membership_report(_host->if_addr, _host->head->data->group);
-        _host->head = _host->head->next;
+
+    head = _host->head;
+
+    while(head)
+    {
+        addr.s_addr = head->data->group;
+        send_membership_report(_host->if_addr, head->data->group, packet);
+        head = head->next;
     }
 
     return _host;

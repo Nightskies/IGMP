@@ -1,20 +1,16 @@
 #include "../include/igmpv2.h"
 
-char * build_packet(const uint32_t src, int type, const uint32_t group)
+void build_packet(const uint32_t src, int type, const uint32_t group, char * packet)
 {
-    char * packet;
+    printf("build start \n");
+
     ip * ip_hdr;
     igmp * igmp_hdr;
 
-    if (NULL == (packet = (char *)malloc(BUF_SIZE)))
-    {
-        fprintf(stderr,"build_paket: Error malloc \n");
-        exit(EXIT_FAILURE);
-    }
+    memset(packet, 0, BUF_SIZE);
 
     // build ip packet
     ip_hdr = (ip *)packet;
-    memset(ip_hdr, 0 , sizeof(ip));
 
     ip_hdr->version = 4; // Ipv4
     ip_hdr->ihl = (sizeof(ip) + 4) >> 2; // +4 for Router Alert option
@@ -22,7 +18,6 @@ char * build_packet(const uint32_t src, int type, const uint32_t group)
     ip_hdr->ttl = 1;
     ip_hdr->tot_len = htons(MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN);
     ip_hdr->protocol = IPPROTO_IGMP;
-    ip_hdr->id = 1;
     ip_hdr->saddr = src;
     ip_hdr->daddr = group;
 
@@ -40,7 +35,7 @@ char * build_packet(const uint32_t src, int type, const uint32_t group)
     igmp_hdr->csum = 0;
     igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN + RAOPT_LEN);
 
-    return packet;
+    printf("build exit \n");
 }
 
 uint16_t build_csum_igmp(uint16_t * addr, int len) 

@@ -2,7 +2,7 @@
 
 int sfd;
 
-void init_sock(struct host * _host)
+void init_sock(void)
 {
     int val = 1;
 
