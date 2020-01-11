@@ -16,6 +16,8 @@ int com_del(char ** args, struct host * _host);
 
 int com_exit(char ** args, struct host * _host);
 
+int com_print(char ** args, struct host * _host);
+
 char * read_line(void);
 
 char ** parse_line(char * line);

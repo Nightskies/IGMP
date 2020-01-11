@@ -3,7 +3,7 @@
 
 char * commands_str[] = { "add","del","print","exit" };
 
-int (*commands_func[]) (char **, struct host *) = { &com_add, &com_del, &com_exit};
+int (*commands_func[]) (char **, struct host *) = { &com_add, &com_del, &com_print, &com_exit};
 
 int ncommands(void)
 {
@@ -35,7 +35,7 @@ int com_print(char ** args, struct host * _host)
 
 	int i = 1;
 
-	printf("\n IGMP CLIENT \n");
+	printf("IGMP CLIENT \n");
 	printf("INTERFACE = %s\n",inet_ntoa(addr));
 	printf("list of subscribed groups\n");
 
@@ -47,6 +47,8 @@ int com_print(char ** args, struct host * _host)
         printf("%d - %s\n",i++,inet_ntoa(addr));
         head = head->next;
     }
+
+	return 1;
 }
 
 int com_exit(char ** args, struct host * _host)

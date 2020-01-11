@@ -27,13 +27,13 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
-    send_leave_group(head,head->head->data->group);
-    //accept_query(head);
+    act_menu(head);
+
 /*
     switch(fork())
     {
         case -1:
-            fatal("main: fork");
+            SYS_ERROR("fork");
         
         case 0:
             while(true)
@@ -41,11 +41,10 @@ void main(int argc, char **argv)
             break;
 
         default:
-            wait(NULL);
+            act_menu(head);
             break;
         
     }
-
 */
     close(sfd);
     exit(EXIT_SUCCESS);
