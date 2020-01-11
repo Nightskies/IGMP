@@ -4,9 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -18,7 +16,6 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include <string.h>
 #include <time.h>
 
 #include "error.h"
@@ -32,7 +29,7 @@
 typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 
-void build_packet(const uint32_t src, int type, const uint32_t group, char * packet);
+char * build_packet(const uint32_t src, int type, const uint32_t group);
 
 uint16_t build_csum_igmp(uint16_t * addr, int len);
 
