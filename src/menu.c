@@ -20,24 +20,18 @@ void act_menu(int argc, char ** const argv)
 void main(int argc, char **argv)
 {
     if (argc == 1)
-    {
-        printf("Usage: ./igmp groups interface\n");
-        exit(EXIT_FAILURE);
-    }
+        ERROR("Usage: ./igmp groups interface\n");
 
-    char * packet;
-    if (NULL == (packet = (char *)malloc(BUF_SIZE)))
-    {
-        fprintf(stderr,"build_paket: Error malloc \n");
-        exit(EXIT_FAILURE);
-    }
+    char * packet = (char *)malloc(BUF_SIZE);
+    if (packet == NULL)
+        ERROR("malloc returned Null");
 
     struct host * head = NULL;
     srand(time(NULL));
 
     head = init_host(argc, argv, packet);
 
-    //send_leave_group(head, head->head->data->group, packet);
+    send_leave_group(head, head->head->data->group, packet);
 
     //accept_query(head);
 /*

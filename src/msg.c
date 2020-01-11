@@ -12,7 +12,7 @@ void send_membership_report(const uint32_t src, const uint32_t group, char * pac
     dst_addr.sin_addr.s_addr = group;
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
-        fatal("sendto");
+        SYS_ERROR("sendto");
     printf("gg\n");
 }
 
@@ -29,7 +29,7 @@ void accept_query(struct host * _host, char * packet)
     igmp * igmp_hdr;
 
     if (-1 == (nbytes = recvfrom(sfd, packet, BUF_SIZE, 0, (struct sockaddr *)&src_addr, &socklen)))
-        fatal("recevfrom");
+        SYS_ERROR("recevfrom");
 
     ip_hdr = (ip *)packet;
 
@@ -58,8 +58,7 @@ void accept_query(struct host * _host, char * packet)
                 switch(fork())
                 {
                     case -1:
-                        fatal("accept_query: fork");
-					    exit(EXIT_FAILURE);
+                        SYS_ERROR("fork");
                     
                     case 0:
                         sleep(next->data->timer);
@@ -80,8 +79,7 @@ void accept_query(struct host * _host, char * packet)
                 switch(fork())
                 {
                     case -1:
-                        fatal("accept_query: fork");
-					    exit(EXIT_FAILURE);
+                        SYS_ERROR("fork");
                     
                     case 0:
                         sleep(next->data->timer);
@@ -115,8 +113,7 @@ void accept_query(struct host * _host, char * packet)
                 switch(fork())
                 {
                     case -1:
-                        fatal("accept_query: fork");
-					    exit(EXIT_FAILURE);
+                        SYS_ERROR("fork");
                     
                     case 0:
                         sleep(next->data->timer);
@@ -146,7 +143,7 @@ void send_leave_group(struct host * _host, const uint32_t group, char * packet)
     dst_addr.sin_addr.s_addr = INADDR_ALLRTRS_GROUP;
 
     if (-1 == sendto(sfd, packet, MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN, 0, (struct sockaddr *)&dst_addr, sizeof(dst_addr))) 
-        fatal("send_leave_group: sendto");
+        SYS_ERROR("sendto");
 
     pop(_host, group);
     printf("sent leave\n");

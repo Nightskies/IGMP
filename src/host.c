@@ -6,10 +6,7 @@ void push(struct host * _host, struct node * data)
 {
     struct group_list * tmp = (struct group_list *)malloc(sizeof(struct group_list));
     if (tmp == NULL)
-    {
-        fprintf(stderr, "push: Error malloc \n");
-        exit(EXIT_FAILURE);
-    }
+        ERROR("malloc returned Null");
 
     tmp->data = data;
     tmp->next = NULL;
@@ -46,17 +43,14 @@ uint32_t get_ip_if_by_name(const char * name)
     struct ifreq ifr;
     size_t length = strlen(name);
 
-    if(length > sizeof(ifr.ifr_name))
-    {
-        printf("Error get_ip_if_by_name \n");
-        exit(EXIT_FAILURE);
-    }
+    if (length > sizeof(ifr.ifr_name))
+        ERROR("Interface name is too big");
 
     memcpy(ifr.ifr_name, name, length);
     ifr.ifr_name[length] = '\0';
     
     if (-1 == ioctl(sfd, SIOCGIFADDR, &ifr)) 
-        fatal("get_ip_if_by_name: ioctl");
+        SYS_ERROR("ioctl");
     
     struct sockaddr_in * ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
 
@@ -74,10 +68,7 @@ struct host * init_host(int argc, char **argv, char * packet)
 {
     struct host * _host = (struct host *)malloc(sizeof(struct host));
     if (_host == NULL)
-    {
-        fprintf(stderr, "init_host: Error malloc \n");
-        exit(EXIT_FAILURE);
-    }
+        ERROR("malloc returned Null");
 
     init_sock();
 
@@ -106,10 +97,7 @@ void set_group(const char * group_ip, struct host * head)
 {
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
-    {
-        fprintf(stderr, "init_group: Error malloc\n");
-        exit(EXIT_FAILURE);
-    }
+        ERROR("malloc returned Null");
 
     data->group = parse_to_ip(group_ip);
     data->timer = 0;

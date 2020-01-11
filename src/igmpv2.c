@@ -68,7 +68,7 @@ uint32_t parse_to_ip(const char * address)
 	uint32_t s_addr;
 
 	if (inet_pton(AF_INET, address, &s_addr) < 0)
-        fatal("parse_to_ip: inet_pton");
+        SYS_ERROR("inet_pton");
 
 	return s_addr;
 }
