@@ -22,16 +22,10 @@ void main(int argc, char **argv)
     if (argc == 1)
         ERROR("Usage: ./igmp groups interface\n");
 
-    char * packet = (char *)malloc(BUF_SIZE);
-    if (packet == NULL)
-        ERROR("malloc returned Null");
-
     struct host * head = NULL;
     srand(time(NULL));
 
-    head = init_host(argc, argv, packet);
-
-    send_leave_group(head, head->head->data->group, packet);
+    head = init_host(argc, argv);
 
     //accept_query(head);
 /*

@@ -64,7 +64,7 @@ uint32_t get_ip_if_by_name(const char * name)
     return if_addr.s_addr;
 }
 
-struct host * init_host(int argc, char **argv, char * packet)
+struct host * init_host(int argc, char **argv)
 {
     struct host * _host = (struct host *)malloc(sizeof(struct host));
     if (_host == NULL)
@@ -86,7 +86,7 @@ struct host * init_host(int argc, char **argv, char * packet)
     while(head)
     {
         addr.s_addr = head->data->group;
-        send_membership_report(_host->if_addr, head->data->group, packet);
+        send_membership_report(_host->if_addr, head->data->group);
         head = head->next;
     }
 

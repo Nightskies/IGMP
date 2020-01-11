@@ -1,7 +1,7 @@
 #include "../include/interpreter.h"
 #include "../include/msg.h"
 
-char * commands_str[] = { "add","del" };
+char * commands_str[] = { "add","del","print","exit" };
 
 int (*commands_func[]) (char **, struct host *) = { &com_add, &com_del, &com_exit};
 
@@ -10,17 +10,25 @@ int ncommands(void)
 	return sizeof(commands_str) / sizeof(char *);
 }
 
-int com_add(char ** args, struct host * _host, char * packet)
+int com_add(char ** args, struct host * _host)
 {
     set_group(args[1], _host);
     printf("added group[%s] \n", args[1]);
+	uint32_t group = parse_to_ip(args[1]);
 
-    send_membership_report(_host->if_addr, _host->head->data->group, packet);
+    send_membership_report(_host->if_addr, group);
 
 	return 1;
 }
 
 int com_del(char ** args, struct host * _host)
+{
+    send_leave_group(_host, parse_to_ip(args[1]));
+    printf("leave group[%s] \n", args[1]);
+	return 1;
+}
+
+int com_print(char ** args, struct host * _host)
 {
     send_leave_group(_host, parse_to_ip(args[1]));
     printf("leave group[%s] \n", args[1]);
@@ -53,10 +61,7 @@ char * read_line(void)
 
 	char * buf = (char *)calloc(BUFSIZE, sizeof(char));
     if(buf == NULL)
-    {
-        fprintf(stderr, "read_line: Error calloc \n");
-        exit(EXIT_FAILURE);
-    }
+		ERROR("calloc returned Null");
 
 	while (true)
 	{
@@ -74,10 +79,7 @@ char * read_line(void)
 			cur_buf_size += BUFSIZE;
 			buf = (char *)realloc(buf, cur_buf_size);
             if(buf == NULL)
-			{
-				fprintf(stderr, "read_line: Error realloc \n");
-                exit(EXIT_FAILURE);
-			}
+				ERROR("realloc returned Null");
 		}
 	}
 }
@@ -86,10 +88,7 @@ char ** parse_line(char * line)
 {
 	char ** args = (char **)calloc(TOKENSIZE,sizeof(char *));
     if(args == NULL)
-    {
-        fprintf(stderr, "parse_line: Error calloc \n");
-        exit(EXIT_FAILURE);
-    }
+		ERROR("calloc returned Null");
 
 	int i = 0;
 
@@ -108,10 +107,7 @@ char ** parse_line(char * line)
 			cur_buf_size += TOKENSIZE;
 			args = (char **)realloc(args,cur_buf_size * sizeof(char *));
             if(args = NULL)
-			{
-				fprintf(stderr, "parse_line: Error realloc \n");
-                exit(EXIT_FAILURE);
-			}
+				ERROR("realloc returned Null");
 
 		}
 		token = strtok(NULL, DELIM);
@@ -130,7 +126,7 @@ int launch(char ** args)
 	switch (pid = fork())
 	{
 		case -1:
-			fatal("launch: fork");
+			SYS_ERROR("fork");
 
 		case 0:
 			execvp(*args, args);

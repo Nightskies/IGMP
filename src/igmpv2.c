@@ -1,11 +1,15 @@
 #include "../include/igmpv2.h"
 
-void build_packet(const uint32_t src, int type, const uint32_t group, char * packet)
+char * build_packet(const uint32_t src, int type, const uint32_t group)
 {
     printf("build start \n");
 
     ip * ip_hdr;
     igmp * igmp_hdr;
+
+    char * packet = (char *)malloc(BUF_SIZE);
+    if (packet == NULL)
+        ERROR("malloc returned Null");
 
     memset(packet, 0, BUF_SIZE);
 
@@ -36,6 +40,7 @@ void build_packet(const uint32_t src, int type, const uint32_t group, char * pac
     igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN + RAOPT_LEN);
 
     printf("build exit \n");
+    return packet;
 }
 
 uint16_t build_csum_igmp(uint16_t * addr, int len) 
