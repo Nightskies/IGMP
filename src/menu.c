@@ -1,26 +1,11 @@
 #include "../include/menu.h"
 
-/*
-extern char * optagr;
-extern int optind, opterr, optopt;
-
-void act_menu(int argc, char ** const argv)
-{
-    int key = 0;
-
-    while (-1 != (key = getopt(argc, argv, "")))
-    {
-        switch(key)
-        {
-        }
-    }
-}
-*/
-
 void main(int argc, char **argv)
 {
     if (argc == 1)
-        ERROR("Usage: ./igmp groups interface\n");
+        ERROR("Usage: ./igmp [OPTIONS] group1 group2 [...] interface\n");
+
+    act_opt(argc, argv);
 
     struct host * head = NULL;
     srand(time(NULL));
@@ -48,4 +33,24 @@ void main(int argc, char **argv)
 */
     close(sfd);
     exit(EXIT_SUCCESS);
+}
+
+void act_opt(int argc, char ** const argv)
+{
+    int key = 0;
+
+    while (-1 != (key = getopt(argc, argv, "h")))
+    {
+        switch(key)
+        {
+            case 'h':
+                printf("Usage: ./igmp [OPTIONS] group1 group2 [...] interface\n");
+                printf("COMMANDS:\nadd <ip> - add multicast group to host \n");
+                printf("del <ip> - delete multicast group from host \n");
+                printf("print - displays the name of the network interface "
+                    "and the list of multicast groups the host is subscribed to\n");
+                exit(EXIT_SUCCESS);
+
+        }
+    }
 }

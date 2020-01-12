@@ -99,7 +99,7 @@ struct host * init_host(int argc, char **argv)
 
 void set_group(const char * group_ip, struct host * head)
 {
-    printf(STYLE_GREEN_BOLD "Set group [%s]\n" STYLE_RESET, group_ip);
+    printf(STYLE_GREEN_BOLD "Set group[%s]\n" STYLE_RESET, group_ip);
 
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
@@ -110,7 +110,7 @@ void set_group(const char * group_ip, struct host * head)
 
     push(head, data);
 
-    printf(STYLE_GREEN_BOLD "Added group[%s]\n" STYLE_RESET, group_ip);
+    printf(STYLE_GREEN_BOLD "Added group[%s] to list\n" STYLE_RESET, group_ip);
 }
 
 uint32_t parse_to_ip(const char * address)
