@@ -1,5 +1,6 @@
 #include "../include/igmpv2.h"
 #include "../include/host.h"
+#include "../include/msg.h"
 
 char * build_packet(const uint32_t src, int type, const uint32_t group)
 {
@@ -22,7 +23,10 @@ char * build_packet(const uint32_t src, int type, const uint32_t group)
     ip_hdr->tot_len = htons(MIN_IP_LEN + RAOPT_LEN + MIN_IGMPV2_LEN);
     ip_hdr->protocol = IPPROTO_IGMP;
     ip_hdr->saddr = src;
-    ip_hdr->daddr = group;
+    if(type == IGMP_HOST_LEAVE_MESSAGE)
+        ip_hdr->daddr = parse_to_ip(ALLRTRS_GROUP);
+    else
+        ip_hdr->daddr = group;
 
     // Router Alert option
     ((unsigned char*)packet + MIN_IP_LEN)[0] = IPOPT_RA;

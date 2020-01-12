@@ -12,7 +12,7 @@ int ncommands(void)
 
 int com_add(char ** args, struct host * _host)
 {
-	printf(STYLE_YELLOW_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
+	printf(STYLE_BLUE_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
 
     set_group(args[1], _host);
     send_membership_report(_host->if_addr, parse_to_ip(args[1]));
@@ -21,9 +21,15 @@ int com_add(char ** args, struct host * _host)
 
 int com_del(char ** args, struct host * _host)
 {
-	printf(STYLE_YELLOW_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
+	if (find(_host, parse_to_ip(args[1])))
+	{
+    	send_leave_group(_host, parse_to_ip(args[1]));
+		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
+	}
 
-    send_leave_group(_host, parse_to_ip(args[1]));
+	else
+		printf(STYLE_RED_BOLD  "You're not subscribed to group[%s]\n" STYLE_RESET, args[1]);
+
 	return 1;
 }
 
@@ -45,16 +51,17 @@ int com_print(char ** args, struct host * _host)
     while(head)
     {
         addr.s_addr = head->data->group;
-        printf("%d - %s\n" STYLE_RESET,i++,inet_ntoa(addr));
+        printf("%d - %s\n",i++,inet_ntoa(addr));
         head = head->next;
     }
+	printf(STYLE_RESET);
 
 	return 1;
 }
 
 int com_exit(char ** args, struct host * _host)
 {
-	printf(STYLE_YELLOW_BOLD "exit client\n" STYLE_RESET);
+	printf(STYLE_BLUE_BOLD "Exit client\n" STYLE_RESET);
 
     struct group_list * tmp = NULL;
 

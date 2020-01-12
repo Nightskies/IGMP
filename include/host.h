@@ -27,6 +27,8 @@ void push(struct host * head, struct node * data);
 // pop group
 void pop(struct host * head, uint32_t group);
 
+bool find(struct host * _host, uint32_t group);
+
 // init host
 struct host * init_host(int argc, char ** argv);
 
