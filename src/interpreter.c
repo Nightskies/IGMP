@@ -63,8 +63,6 @@ int com_print(char ** args, struct host * _host)
 
 int com_exit(char ** args, struct host * _host)
 {
-	printf(STYLE_BLUE_BOLD "Exit client\n" STYLE_RESET);
-
     struct group_list * tmp = NULL;
 
 	kill(pid, SIGINT);
@@ -87,6 +85,7 @@ int com_exit(char ** args, struct host * _host)
         _host->head = tmp;
     }
     free(_host);
+	printf(STYLE_BLUE_BOLD "Exit client\n" STYLE_RESET);
     
 	return 0;
 }

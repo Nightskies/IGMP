@@ -1,8 +1,6 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
-#include "host.h"
-#include "interpreter.h"
 #include <sys/wait.h>
 
 extern char * optagr;

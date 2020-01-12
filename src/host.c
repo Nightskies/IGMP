@@ -26,16 +26,13 @@ void push(struct host * _host, struct node * data)
 
 void pop(struct host * _host, uint32_t group)
 {
-    struct group_list * head = NULL;
-    head = _host->head;
+    while (_host->head->next != NULL && _host->head->next->data->group != group)
+        _host->head = _host->head->next;
 
-    while (head->next != NULL && head->next->data->group != group)
-        head = head->next;
-
-    if (head->next) 
+    if (_host->head->next) 
     {
-        struct group_list * p = head->next;
-        head->next = p->next;
+        struct group_list * p = _host->head->next;
+        _host->head->next = p->next;
         free(p->data);
         free(p);
     }

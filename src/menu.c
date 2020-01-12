@@ -1,5 +1,7 @@
 #include "../include/menu.h"
 #include "../include/msg.h"
+#include "../include/host.h"
+#include "../include/interpreter.h"
 
 int pid; //child process
 
