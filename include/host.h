@@ -17,30 +17,33 @@ struct group_list
 
 struct host 
 {
-    char * if_name;
-    struct group_list * head;
-    uint32_t if_addr;
+    char * if_name; // interface name
+    struct group_list * head; // group list
+    uint32_t if_addr; // interface ip
 };
 
-// push group 
+// put group in list
 void push(struct host * head, struct node * data);
 
-// pop group
+// remove group from list
 void pop(struct host * head, uint32_t group);
 
+// search for a group in a list
 bool find(struct host * _host, uint32_t group);
 
 // init host
 struct host * init_host(int argc, char ** argv);
 
-// init group
+// add group to host
 void set_group(const char * group_ip, struct host * head);
 
 // get ip interface by name
 uint32_t get_ip_if_by_name(const char * name);
 
+// parse string to ip
 uint32_t parse_to_ip(const char * address);
 
+// parse ip to string
 char * parse_to_str(uint32_t ip);
 
 #endif // _HOST_H

@@ -27,10 +27,13 @@
 typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 
+// build igmp packet
 char * build_packet(const uint32_t src, int type, const uint32_t group);
 
+// build check sum igmp
 uint16_t build_csum_igmp(uint16_t * addr, int len);
 
+// sets a random number from the range [0, MAX_RESPONSE_TIME]
 uint32_t timer(const unsigned char max_res_time);
 
 #endif // _IGMPV2_H_
