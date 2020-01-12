@@ -1,5 +1,7 @@
 #include "../include/interpreter.h"
 #include "../include/msg.h"
+#include "../include/menu.h"
+#include "../include/socket.h"
 
 char * commands_str[] = { "add","del","print","exit" };
 
@@ -65,7 +67,7 @@ int com_exit(char ** args, struct host * _host)
 
     struct group_list * tmp = NULL;
 
-	kill(0,SIGINT);
+	kill(pid, SIGINT);
 
 	struct group_list * head = NULL;
 	head = _host->head;
@@ -73,7 +75,7 @@ int com_exit(char ** args, struct host * _host)
 	while(head)
 	{
 		send_leave_group(_host, head->data->group);
-		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
+		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->data->group));
 		head = head->next;
 	}
 
@@ -211,4 +213,7 @@ void act_menu(struct host * _host)
 		free(args);
 	}
 	while (status);
+
+	close(sfd);
+	exit(EXIT_SUCCESS);
 }

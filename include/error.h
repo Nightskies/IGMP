@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "menu.h"
 
 #define STYLE_RESET       "\033[0m"    // default color
 #define STYLE_GREEN_BOLD  "\033[1;32m" // green color with bold text
@@ -16,13 +17,15 @@
 #define ERROR(msg) {\
 	fprintf(stderr,STYLE_BOLD "%s:%d" STYLE_RESET "" STYLE_RED_BOLD " ERROR:" \
         STYLE_RESET "" STYLE_BOLD " %s " STYLE_RESET "\n", __FILE__, __LINE__, msg);\
-         exit(EXIT_FAILURE);\
+        kill(pid, SIGINT);\
+        exit(EXIT_FAILURE);\
 }
 
 #define SYS_ERROR(msg) {\
 	fprintf(stderr, STYLE_BOLD "%s:%d" STYLE_RESET "" STYLE_RED_BOLD " SYSTEM ERROR:" \
         STYLE_RESET "" STYLE_BOLD " %s: %s" STYLE_RESET "\n", __FILE__, __LINE__ ,msg ,strerror(errno));\
-         exit(EXIT_FAILURE);\
+        kill(pid, SIGINT);\
+        exit(EXIT_FAILURE);\
 }
 
 #endif // _ERROR_H_

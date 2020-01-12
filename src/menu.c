@@ -1,4 +1,7 @@
 #include "../include/menu.h"
+#include "../include/msg.h"
+
+int pid; //child process
 
 void main(int argc, char **argv)
 {
@@ -12,7 +15,7 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
-    switch(fork())
+    switch(pid = fork())
     {
         case -1:
             SYS_ERROR("fork");
@@ -27,9 +30,6 @@ void main(int argc, char **argv)
             break;
         
     }
-    
-    close(sfd);
-    exit(EXIT_SUCCESS);
 }
 
 void act_opt(int argc, char ** const argv)
@@ -47,7 +47,6 @@ void act_opt(int argc, char ** const argv)
                 printf("print - displays the name of the network interface "
                     "and the list of multicast groups the host is subscribed to\n");
                 exit(EXIT_SUCCESS);
-
         }
     }
 }
