@@ -12,9 +12,6 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
-    act_menu(head);
-
-/*
     switch(fork())
     {
         case -1:
@@ -30,7 +27,7 @@ void main(int argc, char **argv)
             break;
         
     }
-*/
+    
     close(sfd);
     exit(EXIT_SUCCESS);
 }

@@ -17,8 +17,9 @@ struct group_list
 
 struct host 
 {
-    uint32_t if_addr;
+    char * if_name;
     struct group_list * head;
+    uint32_t if_addr;
 };
 
 // push group 

@@ -43,7 +43,7 @@ int com_print(char ** args, struct host * _host)
 	int i = 1;
 
 	printf(STYLE_BLUE_BOLD "IGMP CLIENT \n");
-	printf("INTERFACE = %s\n",inet_ntoa(addr));
+	printf("INTERFACE = %s\n",_host->if_name);
 	printf("list of subscribed groups\n");
 
 	head = _host->head;
@@ -66,6 +66,16 @@ int com_exit(char ** args, struct host * _host)
     struct group_list * tmp = NULL;
 
 	kill(0,SIGINT);
+
+	struct group_list * head = NULL;
+	head = _host->head;
+
+	while(head)
+	{
+		send_leave_group(_host, head->data->group);
+		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
+		head = head->next;
+	}
 
     while (_host->head)
     {

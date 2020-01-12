@@ -71,7 +71,7 @@ uint32_t get_ip_if_by_name(const char * name)
     
     struct sockaddr_in * ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
 
-    printf(STYLE_GREEN_BOLD "ip interface [%s]\n" STYLE_RESET, inet_ntoa(ipaddr->sin_addr));
+    printf(STYLE_GREEN_BOLD "INTERFACE [%s]\n" STYLE_RESET, inet_ntoa(ipaddr->sin_addr));
 
     struct in_addr if_addr;
     memset(&if_addr, 0, sizeof(struct in_addr));
@@ -94,6 +94,8 @@ struct host * init_host(int argc, char **argv)
     struct group_list * head = NULL;
 
     _host->if_addr = get_ip_if_by_name(argv[argc - 1]);
+
+    _host->if_name = argv[argc - 1];
 
     struct in_addr addr;
 
@@ -137,7 +139,11 @@ uint32_t parse_to_ip(const char * address)
 	if (inet_pton(AF_INET, address, &s_addr) < 0)
         SYS_ERROR("inet_pton");
 
-	return s_addr;
+    if (IN_MULTICAST(ntohl(s_addr)))
+	    return s_addr;
+    
+    else
+        ERROR("This's not a multicast ip");  
 }
 
 char * parse_to_str(uint32_t ip)
