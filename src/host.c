@@ -111,9 +111,16 @@ struct host * init_host(int argc, char **argv)
     _host->if_name = argv[argc - 1];
 
     struct in_addr addr;
+    uint32_t group_ip;
 
     for (int i = 1; i < argc - 1; i++)
-        set_group(argv[i], _host);
+        if (group_ip = parse_to_ip(argv[i]))
+            set_group(group_ip, _host);
+        else
+        {
+            printf(STYLE_RED_BOLD "This's not a multicast ip[%s]\n" STYLE_RESET, argv[i]);
+            exit(EXIT_FAILURE);
+        }
 
     head = _host->head;
 
@@ -129,28 +136,20 @@ struct host * init_host(int argc, char **argv)
     return _host;
 }
 
-void set_group(const char * group_ip, struct host * head)
+void set_group(uint32_t group_ip, struct host * head)
 {
-    printf(STYLE_GREEN_BOLD "Set group[%s]\n" STYLE_RESET, group_ip);
+    printf(STYLE_GREEN_BOLD "Set group[%s]\n" STYLE_RESET, parse_to_str(group_ip));
 
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
         ERROR("malloc returned Null");
 
-    uint32_t ip;
-
-    if ((ip = parse_to_ip(group_ip)))
-    {
-        data->group = ip;
-        data->timer = 0;
-    }
-    else
-        ERROR("This's not a multicast ip")
-    
+    data->group = group_ip;
+    data->timer = 0;
 
     push(head, data);
 
-    printf(STYLE_GREEN_BOLD "Added group[%s] to list\n" STYLE_RESET, group_ip);
+    printf(STYLE_GREEN_BOLD "Added group[%s] to list\n" STYLE_RESET, parse_to_str(group_ip));
 }
 
 uint32_t parse_to_ip(const char * address)

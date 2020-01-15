@@ -35,7 +35,7 @@ bool find(struct host * _host, uint32_t group);
 struct host * init_host(int argc, char ** argv);
 
 // add group to host
-void set_group(const char * group_ip, struct host * head);
+void set_group(uint32_t group_ip, struct host * head);
 
 // get ip interface by name
 uint32_t get_ip_if_by_name(const char * name);

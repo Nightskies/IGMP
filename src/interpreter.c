@@ -14,16 +14,16 @@ int ncommands(void)
 
 int com_add(char ** args, struct host * _host)
 {
-	uint32_t ip;
+	uint32_t group_ip;
 
-	if (ip = parse_to_ip(args[1]))
+	if (group_ip = parse_to_ip(args[1]))
 	{
 		printf(STYLE_BLUE_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
-    	set_group(args[1], _host);
+    	set_group(group_ip, _host);
     	send_membership_report(_host->if_addr, parse_to_ip(args[1]));
 	}
 	else
-		printf(STYLE_RED_BOLD "This's not a multicast ip\n" STYLE_RESET);
+		printf(STYLE_RED_BOLD "This's not a multicast ip[%s]\n" STYLE_RESET, args[1]);
 
 	return 1;
 }
