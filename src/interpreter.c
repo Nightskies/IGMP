@@ -14,20 +14,24 @@ int ncommands(void)
 
 int com_add(char ** args, struct host * _host)
 {
-	printf(STYLE_BLUE_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
+	uint32_t ip;
 
-    set_group(args[1], _host);
-    send_membership_report(_host->if_addr, parse_to_ip(args[1]));
+	if (ip = parse_to_ip(args[1]))
+	{
+		printf(STYLE_BLUE_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
+    	set_group(args[1], _host);
+    	send_membership_report(_host->if_addr, parse_to_ip(args[1]));
+	}
+	else
+		printf(STYLE_RED_BOLD "This's not a multicast ip\n" STYLE_RESET);
+
 	return 1;
 }
 
 int com_del(char ** args, struct host * _host)
 {
 	if (find(_host, parse_to_ip(args[1])))
-	{
     	send_leave_group(_host, parse_to_ip(args[1]));
-		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, args[1]);
-	}
 
 	else
 		printf(STYLE_RED_BOLD  "You're not subscribed to group[%s]\n" STYLE_RESET, args[1]);
@@ -63,28 +67,12 @@ int com_print(char ** args, struct host * _host)
 
 int com_exit(char ** args, struct host * _host)
 {
-    struct group_list * tmp = NULL;
-
 	kill(pid, SIGINT);
 
-	struct group_list * head = NULL;
-	head = _host->head;
+	while(_host->head)
+		send_leave_group(_host, _host->head->data->group);
 
-	while(head)
-	{
-		send_leave_group(_host, head->data->group);
-		printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->data->group));
-		head = head->next;
-	}
-
-    while (_host->head)
-    {
-        tmp = _host->head->next;
-        free(_host->head->data);
-        free(_host->head);
-        _host->head = tmp;
-    }
-    free(_host);
+	free(_host);
 	printf(STYLE_BLUE_BOLD "Exit client\n" STYLE_RESET);
     
 	return 0;

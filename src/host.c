@@ -15,7 +15,7 @@ void push(struct host * _host, struct node * data)
     {
         struct group_list * p = _host->head;
 
-        while (p->next != NULL)
+        while (p->next)
             p = p->next;
 
         p->next = tmp;
@@ -26,15 +26,31 @@ void push(struct host * _host, struct node * data)
 
 void pop(struct host * _host, uint32_t group)
 {
-    while (_host->head->next != NULL && _host->head->next->data->group != group)
-        _host->head = _host->head->next;
+    struct group_list * head = NULL;
+    head = _host->head;
 
-    if (_host->head->next) 
+    if (head->data->group == group)
     {
-        struct group_list * p = _host->head->next;
-        _host->head->next = p->next;
+        printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->data->group));
+
+        head = head->next;
+        free(_host->head->data);
+        free(_host->head);
+        _host->head = head;          
+        return;        
+    }
+
+    while (head->next->data->group != group)
+        head = head->next;
+
+    if (head)
+    {
+        printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->next->data->group));
+
+        struct group_list * p = head->next;
+        head->next = p->next;
         free(p->data);
-        free(p);
+        free(p); 
     }
 }
 
@@ -121,8 +137,16 @@ void set_group(const char * group_ip, struct host * head)
     if (data == NULL)
         ERROR("malloc returned Null");
 
-    data->group = parse_to_ip(group_ip);
-    data->timer = 0;
+    uint32_t ip;
+
+    if ((ip = parse_to_ip(group_ip)))
+    {
+        data->group = ip;
+        data->timer = 0;
+    }
+    else
+        ERROR("This's not a multicast ip")
+    
 
     push(head, data);
 
@@ -140,7 +164,7 @@ uint32_t parse_to_ip(const char * address)
 	    return s_addr;
     
     else
-        ERROR("This's not a multicast ip");  
+        return 0;  
 }
 
 char * parse_to_str(uint32_t ip)
