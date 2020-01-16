@@ -23,18 +23,18 @@ void send_membership_report(const uint32_t src, const uint32_t group)
 
 void accept_query(struct host * _host)
 {
-    char * packet = NULL;
-    socklen_t socklen = sizeof(struct sockaddr_in);
+    char * packet = (char *)malloc(BUF_SIZE);
+    if (packet == NULL)
+        ERROR("malloc returned Null");
 
-    struct sockaddr_in src_addr;
-    memset(&src_addr, 0 , socklen);
+    socklen_t socklen = sizeof(struct sockaddr_in);
 
     ssize_t nbytes;
 
     ip * ip_hdr;
     igmp * igmp_hdr;
 
-    if (-1 == (nbytes = recvfrom(sfd, packet, BUF_SIZE, 0, (struct sockaddr *)&src_addr, &socklen)))
+    if (-1 == (nbytes = recv(sfd, packet, BUF_SIZE, 0)))
         SYS_ERROR("recevfrom");
 
     ip_hdr = (ip *)packet;
@@ -70,8 +70,8 @@ void accept_query(struct host * _host)
                         exit(EXIT_SUCCESS);
 
                     default:
+                        free(packet);
                         break;
-
             }     
         }
         
@@ -106,9 +106,9 @@ void accept_query(struct host * _host)
                         exit(EXIT_SUCCESS);
 
                     default:
+                        free(packet);
                         flag = false;
                         break;
-
                 }
             }
         }

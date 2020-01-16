@@ -4,6 +4,8 @@
 #define ALLRTRS_GROUP "224.0.0.2"
 #define ALLHOSTS_GROUP "224.0.0.1"
 
+#define BUF_SIZE 512
+
 #include "host.h"
 
 // send Membership Report
