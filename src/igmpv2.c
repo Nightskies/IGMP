@@ -75,5 +75,5 @@ uint16_t build_csum_igmp(uint16_t * addr, int len)
 
 uint32_t timer(const unsigned char max_res_time)
 {
-    return rand() % (max_res_time + 1);
+    return 100 * (rand() % (max_res_time + 1));
 }

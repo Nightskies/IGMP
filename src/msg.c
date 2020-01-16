@@ -53,8 +53,6 @@ void accept_query(struct host * _host)
 
         for (next = _host->head; next != NULL; next = next->next)
         {
-            if (next->data->timer == 0)
-            {
                 next->data->timer = timer(igmp_hdr->code);
                 printf(STYLE_GREEN_BOLD "Group[%s] set time = %u" STYLE_RESET, 
                     parse_to_str(next->data->group), next->data->timer);
@@ -66,7 +64,7 @@ void accept_query(struct host * _host)
                         SYS_ERROR("fork");
                     
                     case 0:
-                        sleep(next->data->timer);
+                        usleep(1000 * next->data->timer);
                         send_membership_report(_host->if_addr, next->data->group);
                         next->data->timer = 0;
                         exit(EXIT_SUCCESS);
@@ -74,30 +72,7 @@ void accept_query(struct host * _host)
                     default:
                         break;
 
-                }
-            }
-            
-            else if (next->data->timer < igmp_hdr->code)
-            {
-                next->data->timer = timer(igmp_hdr->code);
-                
-                switch(fork())
-                {
-                    case -1:
-                        SYS_ERROR("fork");
-                    
-                    case 0:
-                        sleep(next->data->timer);
-                        send_membership_report(_host->if_addr, next->data->group);
-                        next->data->timer = 0;
-                        exit(EXIT_SUCCESS);
-
-                    default:
-                        break;
-
-                }
-            }
-            
+            }     
         }
         
     }
@@ -125,7 +100,7 @@ void accept_query(struct host * _host)
                         SYS_ERROR("fork");
                     
                     case 0:
-                        sleep(next->data->timer);
+                        usleep(1000 * next->data->timer);
                         send_membership_report(_host->if_addr, next->data->group);
                         next->data->timer = 0;
                         exit(EXIT_SUCCESS);
