@@ -46,8 +46,7 @@ void act_opt(int argc, char ** const argv)
                 printf("Usage: ./igmp [OPTIONS] group1 group2 [...] interface\n");
                 printf("COMMANDS:\nadd <ip> - add multicast group to host \n");
                 printf("del <ip> - delete multicast group from host \n");
-                printf("print - displays the name of the network interface "
-                    "and the list of multicast groups the host is subscribed to\n");
+                printf("print - displays info about interface \n");
                 exit(EXIT_SUCCESS);
         }
     }

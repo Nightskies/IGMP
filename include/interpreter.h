@@ -30,9 +30,6 @@ char * read_line(void);
 // parse line to tokens
 char ** parse_line(char * line);
 
-// run a specific command
-int launch(char ** args);
-
 // command execution
 int exe(char ** args, struct host * _host);
 

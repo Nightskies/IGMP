@@ -144,31 +144,6 @@ char ** parse_line(char * line)
 	return args;
 }
 
-int launch(char ** args)
-{
-	pid_t pid;
-
-	int status;
-
-	switch (pid = fork())
-	{
-		case -1:
-			SYS_ERROR("fork");
-
-		case 0:
-			execvp(*args, args);
-			exit(EXIT_SUCCESS);
-	}
-
-	do
-	{
-		waitpid(pid, &status, WUNTRACED);
-	}
-	while (!WIFEXITED(status) && !WIFSIGNALED(status));
-
-	return 1;
-}
-
 int exe(char ** args, struct host * _host)
 {
 	int i;
@@ -180,7 +155,9 @@ int exe(char ** args, struct host * _host)
 		if (strcmp(args[0], commands_str[i]) == 0)
 			return (*commands_func[i])(args, _host);
 
-	return launch(args);
+	printf(STYLE_BLUE_BOLD "COMMANDS:\nadd <ip> - add multicast group to host \n" STYLE_RESET);
+    printf(STYLE_BLUE_BOLD "del <ip> - delete multicast group from host \n" STYLE_RESET);
+    printf(STYLE_BLUE_BOLD "print - displays info about interface \n" STYLE_RESET);
 }
 
 void act_menu(struct host * _host)
