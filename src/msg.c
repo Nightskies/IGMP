@@ -80,8 +80,6 @@ void accept_query(struct host * _host)
     // General specific query
     else
     {
-        printf(STYLE_GREEN_BOLD "accept <specific query>\n" STYLE_RESET);
-
         struct group_list * next = NULL;
 
         bool flag = true;
@@ -90,6 +88,8 @@ void accept_query(struct host * _host)
         {
             if (ip_hdr->daddr == next->data->group);
             {
+                printf(STYLE_GREEN_BOLD "accept <specific query>\n" STYLE_RESET);
+
                 next->data->timer = timer(igmp_hdr->code);
                 printf(STYLE_GREEN_BOLD "Group[%s] set time = %u" STYLE_RESET, 
                     parse_to_str(next->data->group), next->data->timer);
