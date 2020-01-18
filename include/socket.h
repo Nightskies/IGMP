@@ -3,7 +3,7 @@
 
 #include "host.h"
 
-extern int sfd;
+extern int ssfd, rsfd;
 
 // Init socket
 void init_sock(void);

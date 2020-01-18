@@ -31,7 +31,8 @@ void pop(struct host * _host, uint32_t group)
 
     if (head->data->group == group)
     {
-        printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->data->group));
+        if (Debug)
+            printf(STYLE_BLUE_BOLD "group[%s] is removed from the list\n" STYLE_RESET, parse_to_str(head->data->group));
 
         head = head->next;
         free(_host->head->data);
@@ -45,7 +46,8 @@ void pop(struct host * _host, uint32_t group)
 
     if (head)
     {
-        printf(STYLE_BLUE_BOLD "leave group[%s] \n" STYLE_RESET, parse_to_str(head->next->data->group));
+        if (Debug)
+            printf(STYLE_BLUE_BOLD "group[%s] is removed from the list\n" STYLE_RESET, parse_to_str(head->next->data->group));
 
         struct group_list * p = head->next;
         head->next = p->next;
@@ -79,7 +81,7 @@ uint32_t get_ip_if_by_name(const char * name)
     memcpy(ifr.ifr_name, name, length);
     ifr.ifr_name[length] = '\0';
     
-    if (-1 == ioctl(sfd, SIOCGIFADDR, &ifr)) 
+    if (-1 == ioctl(ssfd, SIOCGIFADDR, &ifr)) 
         SYS_ERROR("ioctl");
     
     struct sockaddr_in * ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
@@ -112,8 +114,12 @@ struct host * init_host(int argc, char **argv)
 
     struct in_addr addr;
     uint32_t group_ip;
+    int i = 1;
+    
+    if (Debug)
+        i = 2;
 
-    for (int i = 1; i < argc - 1; i++)
+    for (; i < argc - 1; i++)
         if (group_ip = parse_to_ip(argv[i]))
             set_group(group_ip, _host);
         else
@@ -137,8 +143,9 @@ struct host * init_host(int argc, char **argv)
 }
 
 void set_group(uint32_t group_ip, struct host * head)
-{
-    printf(STYLE_GREEN_BOLD "Set group[%s]\n" STYLE_RESET, parse_to_str(group_ip));
+{   
+    if (Debug)
+        printf(STYLE_GREEN_BOLD "Set group[%s]\n" STYLE_RESET, parse_to_str(group_ip));
 
     struct node * data = (struct node *)malloc(sizeof(struct node));
     if (data == NULL)
@@ -149,7 +156,8 @@ void set_group(uint32_t group_ip, struct host * head)
 
     push(head, data);
 
-    printf(STYLE_GREEN_BOLD "Added group[%s] to list\n" STYLE_RESET, parse_to_str(group_ip));
+    if (Debug)
+        printf(STYLE_GREEN_BOLD "Added group[%s] to list\n" STYLE_RESET, parse_to_str(group_ip));
 }
 
 uint32_t parse_to_ip(const char * address)

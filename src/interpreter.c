@@ -178,6 +178,7 @@ void act_menu(struct host * _host)
 	}
 	while (status);
 
-	close(sfd);
+	close(ssfd);
+	close(rsfd);
 	exit(EXIT_SUCCESS);
 }

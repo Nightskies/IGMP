@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <linux/ip.h>
 #include <linux/igmp.h>
+#include <net/ethernet.h>
+#include <linux/if_packet.h>
 
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -26,6 +28,7 @@
 
 typedef struct iphdr ip;
 typedef struct igmphdr igmp;
+typedef struct ethhdr eth;
 
 // build igmp packet
 char * build_packet(const uint32_t src, int type, const uint32_t group);
