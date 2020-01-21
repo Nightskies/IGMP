@@ -30,6 +30,8 @@ typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 typedef struct ethhdr eth;
 
+typedef enum type_query { general, specific } type_query;
+
 // build igmp packet
 char * build_packet(const uint32_t src, int type, const uint32_t group);
 
@@ -37,6 +39,6 @@ char * build_packet(const uint32_t src, int type, const uint32_t group);
 uint16_t build_csum_igmp(uint16_t * addr, int len);
 
 // sets a random number from the range [0, MAX_RESPONSE_TIME]
-uint32_t timer(const unsigned char max_res_time);
+uint32_t get_rand_num(const unsigned char max_res_time);
 
 #endif // _IGMPV2_H_

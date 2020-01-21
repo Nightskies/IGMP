@@ -43,8 +43,11 @@ char * build_packet(const uint32_t src, int type, const uint32_t group)
     igmp_hdr->csum = build_csum_igmp((uint16_t *)igmp_hdr, MIN_IP_LEN + RAOPT_LEN);
 
     if (Debug)
-        printf(STYLE_GREEN_BOLD "built igmp packet [type = 0x%x, code = %d, group = %s, csum = 0x%x]\n" STYLE_RESET, 
-            igmp_hdr->type, igmp_hdr->code, parse_to_str(group), igmp_hdr->csum);
+    {
+        printf(STYLE_GREEN_BOLD "\nbuilt igmp packet [type = 0x%x, code = %d, group = %s, csum = 0x0%x]" STYLE_RESET, 
+            igmp_hdr->type, igmp_hdr->code, parse_to_str(group), htons(igmp_hdr->csum));
+        fflush(stdout);
+    }
 
     return packet;
 }
@@ -74,7 +77,7 @@ uint16_t build_csum_igmp(uint16_t * addr, int len)
     return(answer);
 }
 
-uint32_t timer(const unsigned char max_res_time)
+uint32_t get_rand_num(const unsigned char max_res_time)
 {
-    return 100 * (rand() % (max_res_time + 1));
+    return rand() % (max_res_time / 10) + 1;
 }

@@ -1,9 +1,8 @@
-#include "../include/menu.h"
+#include "../include/main.h"
 #include "../include/msg.h"
 #include "../include/host.h"
-#include "../include/interpreter.h"
+#include "../include/socket.h"
 
-int pid; //child process
 bool Debug = false;
 
 void main(int argc, char **argv)
@@ -18,21 +17,7 @@ void main(int argc, char **argv)
 
     head = init_host(argc, argv);
 
-    switch(pid = fork())
-    {
-        case -1:
-            SYS_ERROR("fork");
-        
-        case 0:
-            while(true)
-                accept_query(head);
-            break;
-
-        default:
-            act_menu(head);
-            break;
-        
-    }
+    act_menu(head);
 }
 
 void act_opt(int argc, char ** const argv)

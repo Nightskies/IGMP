@@ -2,8 +2,6 @@
 #define _INTERP_H_
 
 #include "host.h"
-#include <sys/wait.h>
-#include <signal.h>
 
 #define BUFSIZE 512
 #define TOKENSIZE 64
@@ -25,16 +23,13 @@ int com_exit(char ** args, struct host * _host);
 int com_print(char ** args, struct host * _host);
 
 // read line 
-char * read_line(void);
+int read_line(char *buf);
 
 // parse line to tokens
 char ** parse_line(char * line);
 
 // command execution
 int exe(char ** args, struct host * _host);
-
-// menu
-void act_menu(struct host * _host);
 
 #endif // _INTERP_H_
 

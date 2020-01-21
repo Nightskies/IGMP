@@ -1,12 +1,10 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
-#include <sys/wait.h>
 #include <stdbool.h>
 
 extern char * optagr;
 extern int optind, opterr, optopt;
-extern int pid;
 extern bool Debug;
 
 // handling options

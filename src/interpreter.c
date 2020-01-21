@@ -1,6 +1,6 @@
 #include "../include/interpreter.h"
 #include "../include/msg.h"
-#include "../include/menu.h"
+#include "../include/main.h"
 #include "../include/socket.h"
 
 char * commands_str[] = { "add","del","print","exit" };
@@ -18,7 +18,13 @@ int com_add(char ** args, struct host * _host)
 
 	if (group_ip = parse_to_ip(args[1]))
 	{
-		printf(STYLE_BLUE_BOLD "add group[%s] \n" STYLE_RESET, args[1]);
+		if (find_by_group(_host, group_ip))
+		{
+			printf(STYLE_RED_BOLD "group[%s] is already on the list\n" STYLE_RESET, args[1]);
+			return 1;
+		}
+
+		printf(STYLE_BLUE_BOLD "add group[%s]" STYLE_RESET, args[1]);
     	set_group(group_ip, _host);
     	send_membership_report(_host->if_addr, parse_to_ip(args[1]));
 	}
@@ -30,11 +36,11 @@ int com_add(char ** args, struct host * _host)
 
 int com_del(char ** args, struct host * _host)
 {
-	if (find(_host, parse_to_ip(args[1])))
+	if (find_by_group(_host, parse_to_ip(args[1])))
     	send_leave_group(_host, parse_to_ip(args[1]));
 
 	else
-		printf(STYLE_RED_BOLD  "You're not subscribed to group[%s]\n" STYLE_RESET, args[1]);
+		printf(STYLE_RED_BOLD "\nYou're not subscribed to group[%s]" STYLE_RESET, args[1]);
 
 	return 1;
 }
@@ -50,14 +56,14 @@ int com_print(char ** args, struct host * _host)
 
 	printf(STYLE_BLUE_BOLD "IGMP CLIENT \n");
 	printf("INTERFACE = %s\n",_host->if_name);
-	printf("list of subscribed groups\n");
+	printf("list of subscribed groups");
 
 	head = _host->head;
 
     while(head)
     {
         addr.s_addr = head->data->group;
-        printf("%d - %s\n",i++,inet_ntoa(addr));
+        printf("\n%d - %s",i++,inet_ntoa(addr));
         head = head->next;
     }
 	printf(STYLE_RESET);
@@ -67,47 +73,38 @@ int com_print(char ** args, struct host * _host)
 
 int com_exit(char ** args, struct host * _host)
 {
-	kill(pid, SIGINT);
-
 	while(_host->head)
 		send_leave_group(_host, _host->head->data->group);
 
 	free(_host);
-	printf(STYLE_BLUE_BOLD "Exit client\n" STYLE_RESET);
+	close(ssfd);
+	close(rsfd);
+
+	printf(STYLE_BLUE_BOLD "\nExit client\n" STYLE_RESET);
     
 	return 0;
 }
 
-char * read_line(void)
+int read_line(char * buf)
 {
-	int ch;
-
-	int cur_buf_size = BUFSIZE;
-
 	int i = 0;
 
-	char * buf = (char *)calloc(BUFSIZE, sizeof(char));
-    if(buf == NULL)
-		ERROR("calloc returned Null");
+	char ch;
 
 	while (true)
 	{
-		ch = getchar();
+		ssize_t nbyte = read(STDIN_FILENO, &ch, 1);
 
-		if (ch == EOF || ch == '\n')
+		if (ch == '\n')
 		{
 			buf[i] = '\0';
-			return buf;
+			return 0;
 		}
-		buf[i++] = ch;
 
-		if (i == cur_buf_size)
-		{
-			cur_buf_size += BUFSIZE;
-			buf = (char *)realloc(buf, cur_buf_size);
-            if(buf == NULL)
-				ERROR("realloc returned Null");
-		}
+		if (nbyte == 1)
+			buf[i++] = ch;
+
+		else return -1;
 	}
 }
 
@@ -157,28 +154,5 @@ int exe(char ** args, struct host * _host)
 
 	printf(STYLE_BLUE_BOLD "COMMANDS:\nadd <ip> - add multicast group to host \n" STYLE_RESET);
     printf(STYLE_BLUE_BOLD "del <ip> - delete multicast group from host \n" STYLE_RESET);
-    printf(STYLE_BLUE_BOLD "print - displays info about interface \n" STYLE_RESET);
-}
-
-void act_menu(struct host * _host)
-{
-    char * line;
-	char ** args;
-	int status;
-
-	do
-	{
-		fputs(STYLE_YELLOW_BOLD "Enter command > " STYLE_RESET, stdout);
-		line = read_line();
-		args = parse_line(line);
-		status = exe(args, _host);
-
-		free(line);
-		free(args);
-	}
-	while (status);
-
-	close(ssfd);
-	close(rsfd);
-	exit(EXIT_SUCCESS);
+    printf(STYLE_BLUE_BOLD "print - displays info about interface" STYLE_RESET);
 }
