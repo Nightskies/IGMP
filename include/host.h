@@ -4,9 +4,20 @@
 #include "igmpv2.h"
 #include <sys/poll.h>
 
+enum state { NOT_SET, SET }; // timer state
+
+typedef struct delay_send
+{
+    struct pollfd * fds; // contains timer descriptors
+    bool timers_status; // at least one timer works
+    int n; //
+    int reports;
+}delay;
+
 struct node
 {
-    uint32_t group;
+    enum state timer_state; // status timer
+    uint32_t group; // ip group
     int id;
 };
 
@@ -21,16 +32,8 @@ struct host
     char * if_name; // interface name
     struct group_list * head; // group list
     uint32_t if_addr; // interface ip
-    bool timer_status;
-    type_query type;
+    delay * _delay;
 };
-
-typedef struct delayed_send
-{
-    struct pollfd * fds; // contains timer descriptors
-    int reports; // current number of reports
-    int n; // number of reports
-}delay;
 
 // put group in list
 void push(struct host * head, struct node * data);
@@ -54,7 +57,7 @@ void set_group(uint32_t group_ip, struct host * head);
 uint32_t get_ip_if_by_name(const char * name);
 
 // wait for the timers to end and send a report
-void act_time(struct host * head, delay * _delay);
+void act_timer(struct host * head);
 
 // event handling
 void act_menu(struct host * head);

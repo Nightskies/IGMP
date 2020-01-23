@@ -30,8 +30,6 @@ typedef struct iphdr ip;
 typedef struct igmphdr igmp;
 typedef struct ethhdr eth;
 
-typedef enum type_query { general, specific } type_query;
-
 // build igmp packet
 char * build_packet(const uint32_t src, int type, const uint32_t group);
 

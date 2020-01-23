@@ -23,7 +23,7 @@ void send_membership_report(const uint32_t src, const uint32_t group)
     free(packet);
 }
 
-struct pollfd * accept_query(struct host * _host)
+int accept_query(struct host * _host)
 {
     char packet[BUF_SIZE];
     memset(packet, 0, BUF_SIZE);
@@ -49,6 +49,11 @@ struct pollfd * accept_query(struct host * _host)
     // General query
     if (ip_hdr->daddr == parse_to_ip(ALLHOSTS_GROUP))
     {
+        int i, n, tfd;
+
+        if ((n = num_group(_host)) == 0)
+            return false;
+
         if (Debug)
         {
             printf(STYLE_GREEN_BOLD "\naccept <general query>" STYLE_RESET);
@@ -58,40 +63,57 @@ struct pollfd * accept_query(struct host * _host)
         struct itimerspec ts;
         memset(&ts, 0, sizeof(struct itimerspec));
 
+        if (!_host->_delay->timers_status)
+            _host->_delay->timers_status = true;
+
         struct group_list * next = NULL;
-        int n, i;
 
-        n = num_group(_host);
-        if (n == 0)
-            return NULL;
-
-        struct pollfd * fds = (struct pollfd *)malloc(n * sizeof(struct pollfd));
-        int tfd[n];
+        struct pollfd fds;
 
         for (next = _host->head, i = 0; next != NULL; next = next->next, i++)
         {
-            if (-1 == (tfd[i] = timerfd_create(CLOCK_MONOTONIC, 0)))
-                SYS_ERROR("timerfd_create");
-	            
-            ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
-            next->data->id = i;
-
-            if (timerfd_settime(tfd[i], 0, &ts, NULL) < 0) 
-                SYS_ERROR("timerfd_settime");
-
-            if (Debug)
+            if (next->data->timer_state == NOT_SET)
             {
-                printf(STYLE_GREEN_BOLD "\nGroup[%s] set timer = %ld sec" STYLE_RESET, 
-                    parse_to_str(next->data->group), ts.it_value.tv_sec);
-                fflush(stdout);
+                if (-1 == (tfd = timerfd_create(CLOCK_MONOTONIC, 0)))
+                    SYS_ERROR("timerfd_create");
+	            
+                ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
+                next->data->id = _host->_delay->n++;
+                _host->_delay->reports++;
+
+                if (timerfd_settime(tfd, 0, &ts, NULL) < 0) 
+                    SYS_ERROR("timerfd_settime");
+
+                if (Debug)
+                {
+                    printf(STYLE_GREEN_BOLD "\nGroup[%s] set timer = %ld sec" STYLE_RESET, 
+                        parse_to_str(next->data->group), ts.it_value.tv_sec);
+                    fflush(stdout);
+                }
+                fds.fd = tfd;
+                fds.events = POLLIN;
+
+                next->data->timer_state = SET;
+                _host->_delay->fds[next->data->id] = fds;
             }
-            fds[i].fd = tfd[i];
-            fds[i].events = POLLIN;
+            else
+            {
+                int max_resp_time = igmp_hdr->code / 10; // in sec
+                tfd = _host->_delay->fds[next->data->id].fd;
+
+                if (-1 == timerfd_gettime(tfd, &ts))
+                    SYS_ERROR("timerfd_gettime");
+
+                if (max_resp_time < ts.it_value.tv_sec)
+                {
+                    ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
+                    if (-1 == timerfd_settime(tfd, 0, &ts, NULL)) 
+                        SYS_ERROR("timerfd_settime");
+                }
+            }        
         }
-        _host->timer_status = true;
-        _host->type = general;
+         return true;
         
-        return fds;
     }
 
     // General specific query
@@ -101,44 +123,65 @@ struct pollfd * accept_query(struct host * _host)
 
         if (next = find_by_group(_host, igmp_hdr->group))
         {
-            bool flag = true;
-
-            struct itimerspec ts;
-            memset(&ts, 0, sizeof(struct itimerspec));
-
             if (Debug)
             {
                 printf(STYLE_GREEN_BOLD "\naccept <specific query>\n" STYLE_RESET);
                 fflush(stdout);
             }
 
-            struct pollfd * fds = (struct pollfd *)malloc(sizeof(struct pollfd));
+            struct itimerspec ts;
+            memset(&ts, 0, sizeof(struct itimerspec));
+
+            struct pollfd fds;
+
+            if (!_host->_delay->timers_status)
+                _host->_delay->timers_status = true;
+
             int tfd;
-                
-            if (-1 == (tfd = timerfd_create(CLOCK_MONOTONIC, 0)))
-                SYS_ERROR("timerfd_create");
 
-            ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
-
-            if (timerfd_settime(tfd, 0, &ts, NULL) < 0) 
-                SYS_ERROR("timerfd_settime");
-
-            if (Debug)
+            if (next->data->timer_state == NOT_SET)
             {
-                printf(STYLE_GREEN_BOLD "\nGroup[%s] set timer = %ld sec" STYLE_RESET, 
-                    parse_to_str(next->data->group), ts.it_value.tv_sec);
-                fflush(stdout);
+                if (-1 == (tfd = timerfd_create(CLOCK_MONOTONIC, 0)))
+                    SYS_ERROR("timerfd_create");
+
+                ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
+                next->data->id = _host->_delay->n++;
+                _host->_delay->reports++;
+
+                if (-1 == timerfd_settime(tfd, 0, &ts, NULL)) 
+                    SYS_ERROR("timerfd_settime");
+
+                if (Debug)
+                {
+                    printf(STYLE_GREEN_BOLD "\nGroup[%s] set timer = %ld sec" STYLE_RESET, 
+                        parse_to_str(next->data->group), ts.it_value.tv_sec);
+                    fflush(stdout);
+                }
+                fds.fd = tfd;
+                fds.events = POLLIN;  
+
+                next->data->timer_state = SET;
+                _host->_delay->fds[next->data->id] = fds;
             }
-            fds->fd = tfd;
-            fds->events = POLLIN;  
+            else
+            {   
+                int max_resp_time = igmp_hdr->code / 10; // in sec
+                tfd = _host->_delay->fds[next->data->id].fd;
 
-            _host->timer_status = true;
-            _host->type = specific;
+                if (-1 == timerfd_gettime(tfd, &ts))
+                    SYS_ERROR("timerfd_gettime");
 
-            return fds;    
+                if (max_resp_time < ts.it_value.tv_sec)
+                {
+                    ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
+                    if (-1 == timerfd_settime(tfd, 0, &ts, NULL)) 
+                        SYS_ERROR("timerfd_settime");
+                }
+            }
+            return true;
         }
     }
-    return NULL;
+    return false;
 }
 
 void send_leave_group(struct host * _host, const uint32_t group)

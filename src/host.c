@@ -138,6 +138,8 @@ struct host * init_host(int argc, char **argv)
     if (_host == NULL)
         ERROR("malloc returned Null");
 
+    memset(_host, 0, sizeof(struct host));
+
     init_sock();
 
     struct group_list * head = NULL;
@@ -146,7 +148,15 @@ struct host * init_host(int argc, char **argv)
 
     _host->if_name = argv[argc - 1];
 
-    _host->timer_status = false;
+    _host->_delay = (delay *)malloc(sizeof(delay));
+    if (_host->_delay == NULL)
+        ERROR("malloc returned Null");
+
+    memset(_host->_delay, 0, sizeof(delay));
+
+    _host->_delay->fds = (struct pollfd *)malloc((argc - 2) * sizeof(struct pollfd));
+    if (_host->_delay->fds == NULL)
+        ERROR("malloc returned Null");
 
     struct in_addr addr;
     uint32_t group_ip;
@@ -190,6 +200,8 @@ void set_group(uint32_t group_ip, struct host * head)
     if (data == NULL)
         ERROR("malloc returned Null");
 
+    memset(data, 0, sizeof(struct node));
+
     data->group = group_ip;
 
     push(head, data);
@@ -201,9 +213,9 @@ void set_group(uint32_t group_ip, struct host * head)
     }
 }
 
-void act_time(struct host * _host, delay * _delay)
+void act_timer(struct host * _host)
 {
-    switch (poll(_delay->fds, _delay->n, 0))
+    switch (poll(_host->_delay->fds, _host->_delay->n, 0))
     {
         case -1:
             SYS_ERROR("poll");
@@ -212,21 +224,24 @@ void act_time(struct host * _host, delay * _delay)
             break;
     
         default:
-            for (int i = 0; i < _delay->n; i++)
+            for (int i = 0; i < _host->_delay->n; i++)
             {
-                if ( _delay->fds[i].revents & POLLIN)
+                if (_host->_delay->fds[i].revents & POLLIN)
                 {
-                    read(_delay->fds[i].fd, NULL, 8);
-                     _delay->fds[i].revents = 0;
+                    read(_host->_delay->fds[i].fd, NULL, 8);
+                    _host->_delay->fds[i].revents = 0;
+
                     struct group_list * group = NULL;
                     group = find_by_id(_host, i);
 
                     send_membership_report(_host->if_addr, group->data->group);
-                     _delay->reports--;
+                    _host->_delay->reports--;
+                    group->data->timer_state = NOT_SET;
 
-                    if ( _delay->reports == 0)
+                    if (_host->_delay->reports == 0)
                     {
-                        _host->timer_status = false;
+                        _host->_delay->n = 0;
+                        _host->_delay->timers_status = false;
                         printf(STYLE_YELLOW_BOLD "\nEnter command > " STYLE_RESET);
                         fflush(stdout);
                     }
@@ -243,13 +258,9 @@ void act_menu(struct host * _host)
 
     char ** args;
 
-    delay _delay;
-
-    int i;
-
-    struct pollfd * tfd = NULL;
-
     char line[BUFSIZE];
+
+    int n;
     
     struct pollfd fds[2];
 
@@ -284,7 +295,6 @@ void act_menu(struct host * _host)
                         }
                         else
                         {
-                            free(_delay.fds);
                             free(args);
                             exit(EXIT_SUCCESS);
                         }
@@ -295,24 +305,12 @@ void act_menu(struct host * _host)
                 {
                     fds[1].revents = 0;
 
-                    if (_host->timer_status)
-                        act_time(_host, &_delay);
-
-                    else if (tfd = accept_query(_host))
-                    {
-                        _delay.fds = tfd;
-                        if (_host->type == general)
-                        {
-                            _delay.reports = num_group(_host);
-                            _delay.n = _delay.reports;
-                        }
-                        else
-                        {
-                            _delay.reports = 1;
-                            _delay.n = _delay.reports;
-                        }
-                        act_time(_host, &_delay);
-                    }
+                    if (accept_query(_host))
+                       act_timer(_host);
+                        
+                    else if (_host->_delay->timers_status)
+                        act_timer(_host);
+                              
                 }
         } 
     }
