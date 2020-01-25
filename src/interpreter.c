@@ -53,7 +53,7 @@ int com_del(char ** args, struct host * _host)
 	if (group = find_by_group(_host, parse_to_ip(args[1])))
 	{
 		int n = num_group(_host);
-		
+
 		_host->_delay->fds = (struct pollfd *)realloc(_host->_delay->fds, n - 1);
 		if (_host->_delay->fds == NULL)
 			ERROR("realloc returned Null");

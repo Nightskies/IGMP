@@ -88,10 +88,12 @@ struct group_list * find_by_id(struct host * _host, int id)
 	return NULL;
 }
 
-uint32_t get_ip_if_by_name(const char * name)
+uint32_t if_bind(const char * name)
 {
     struct ifreq ifr;
     size_t length = strlen(name);
+
+    struct sockaddr_ll addr;
 
     if (length > sizeof(ifr.ifr_name))
         ERROR("Interface name is too big");
@@ -101,6 +103,15 @@ uint32_t get_ip_if_by_name(const char * name)
     
     if (-1 == ioctl(ssfd, SIOCGIFADDR, &ifr)) 
         SYS_ERROR("ioctl");
+
+    if (-1 == ioctl(rsfd, SIOCGIFINDEX, &ifr))
+        SYS_ERROR("ioctl");
+
+    addr.sll_family = PF_PACKET;
+    addr.sll_ifindex = ifr.ifr_ifindex;
+
+    if (-1 == bind(rsfd, (struct sockaddr*)&addr, sizeof(addr)))
+        SYS_ERROR("bind");
     
     struct sockaddr_in * ipaddr = (struct sockaddr_in*)&ifr.ifr_addr;
 
@@ -130,7 +141,7 @@ int num_group(struct host * _host)
     return num;
 }
 
-struct host * init_host(int argc, char **argv)
+struct host * init_host(int argc, char ** argv)
 {
     printf (STYLE_GREEN_BOLD "Start init host..." STYLE_RESET);
 
@@ -144,7 +155,7 @@ struct host * init_host(int argc, char **argv)
 
     struct group_list * head = NULL;
 
-    _host->if_addr = get_ip_if_by_name(argv[argc - 1]);
+    _host->if_addr = if_bind(argv[argc - 1]);
 
     _host->if_name = argv[argc - 1];
 

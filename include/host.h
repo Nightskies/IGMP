@@ -10,8 +10,8 @@ typedef struct delay_send
 {
     struct pollfd * fds; // contains timer descriptors
     bool timers_status; // at least one timer works
-    int n; //
-    int reports;
+    int n; // number of reports
+    int reports; // current number of reports
 }delay;
 
 struct node
@@ -53,8 +53,8 @@ struct host * init_host(int argc, char ** argv);
 // add group to host
 void set_group(uint32_t group_ip, struct host * head);
 
-// get ip interface by name
-uint32_t get_ip_if_by_name(const char * name);
+// receive socket  bind to interface by name and return ip
+uint32_t if_bind(const char * name);
 
 // wait for the timers to end and send a report
 void act_timer(struct host * head);
