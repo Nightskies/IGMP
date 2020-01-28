@@ -260,7 +260,6 @@ void act_timer(struct host * _host)
 
                     if (_host->_delay->reports == 0)
                     {
-                        _host->_delay->n = 0;
                         _host->_delay->timers_status = false;
                         printf(STYLE_YELLOW_BOLD "\nEnter command > " STYLE_RESET);
                         fflush(stdout);

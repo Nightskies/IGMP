@@ -122,7 +122,7 @@ int accept_query(struct host * _host)
     {
         struct group_list * next = NULL;
 
-        if (next = find_by_group(_host, igmp_hdr->group))
+        if (next = find_by_group(_host, ip_hdr->daddr))
         {
             if (Debug)
             {
