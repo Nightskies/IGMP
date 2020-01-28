@@ -1,18 +1,9 @@
 #ifndef _HOST_H_
 #define _HOST_H_
 
-#include "igmpv2.h"
-#include <sys/poll.h>
+#include "delay.h"
 
 enum state { NOT_SET, SET }; // timer state
-
-typedef struct delay_send
-{
-    struct pollfd * fds; // contains timer descriptors
-    bool timers_status; // at least one timer works
-    int n; // number of reports
-    int reports; // current number of reports
-}delay;
 
 struct node
 {

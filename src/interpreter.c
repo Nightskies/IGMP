@@ -24,12 +24,6 @@ int com_add(char ** args, struct host * _host)
 			return 1;
 		}
 
-		int n = num_group(_host);
-
-		_host->_delay->fds = (struct pollfd *)realloc(_host->_delay->fds, n + 1);
-		if (_host->_delay->fds == NULL)
-			ERROR("realloc returned Null");
-
 		printf(STYLE_BLUE_BOLD "add group[%s]" STYLE_RESET, args[1]);
     	set_group(group_ip, _host);
     	send_membership_report(_host->if_addr, parse_to_ip(args[1]));
@@ -51,15 +45,7 @@ int com_del(char ** args, struct host * _host)
 	}
 
 	if (group = find_by_group(_host, parse_to_ip(args[1])))
-	{
-		int n = num_group(_host);
-
-		_host->_delay->fds = (struct pollfd *)realloc(_host->_delay->fds, n - 1);
-		if (_host->_delay->fds == NULL)
-			ERROR("realloc returned Null");
-
     	send_leave_group(_host, parse_to_ip(args[1]));
-	}
 
 	else
 		printf(STYLE_RED_BOLD "\nYou're not subscribed to group[%s]" STYLE_RESET, args[1]);
@@ -98,7 +84,6 @@ int com_exit(char ** args, struct host * _host)
 	while(_host->head)
 		send_leave_group(_host, _host->head->data->group);
 
-	free(_host->_delay->fds);
     free(_host->_delay);
 	free(_host);
 	close(ssfd);

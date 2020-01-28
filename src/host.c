@@ -165,10 +165,6 @@ struct host * init_host(int argc, char ** argv)
 
     memset(_host->_delay, 0, sizeof(delay));
 
-    _host->_delay->fds = (struct pollfd *)malloc((argc - 2) * sizeof(struct pollfd));
-    if (_host->_delay->fds == NULL)
-        ERROR("malloc returned Null");
-
     struct in_addr addr;
     uint32_t group_ip;
     int i = 1;
@@ -201,6 +197,8 @@ struct host * init_host(int argc, char ** argv)
 
 void set_group(uint32_t group_ip, struct host * head)
 {   
+    static int id = 0;
+
     if (Debug)
     {
         printf(STYLE_GREEN_BOLD "\nSet group[%s]" STYLE_RESET, parse_to_str(group_ip));
@@ -214,8 +212,18 @@ void set_group(uint32_t group_ip, struct host * head)
     memset(data, 0, sizeof(struct node));
 
     data->group = group_ip;
+    data->id = id;
 
     push(head, data);
+
+    struct pollfd_node * node = (struct pollfd_node *)malloc(sizeof(struct pollfd_node));
+    if (node == NULL)
+        ERROR("malloc returned Null");
+
+    memset(node, 0, sizeof(struct pollfd_node));
+    node->id = id++;
+
+    push_fd(head->_delay, node);
 
     if (Debug)
     {
@@ -226,24 +234,25 @@ void set_group(uint32_t group_ip, struct host * head)
 
 void act_timer(struct host * _host)
 {
-    switch (poll(_host->_delay->fds, _host->_delay->n, 0))
-    {
-        case -1:
-            SYS_ERROR("poll");
+    struct pollfd_list * next = NULL;
+    for (next = _host->_delay->fds; next != NULL; next = next->next)
+    {  
+        switch (poll(&next->data->fd, 1, 0))
+        {
+            case -1:
+                SYS_ERROR("poll");
 
-        case 0:
-            break;
+            case 0:
+                break;
     
-        default:
-            for (int i = 0; i < _host->_delay->n; i++)
-            {
-                if (_host->_delay->fds[i].revents & POLLIN)
+            default:
+                if (next->data->fd.revents & POLLIN)
                 {
-                    read(_host->_delay->fds[i].fd, NULL, 8);
-                    _host->_delay->fds[i].revents = 0;
+                    read(next->data->fd.fd, NULL, 8);
+                    next->data->fd.revents = 0;
 
                     struct group_list * group = NULL;
-                    group = find_by_id(_host, i);
+                    group = find_by_id(_host, next->data->id);
 
                     send_membership_report(_host->if_addr, group->data->group);
                     _host->_delay->reports--;
@@ -257,8 +266,8 @@ void act_timer(struct host * _host)
                         fflush(stdout);
                     }
                 }
-            }
-            break;
+                break;
+        }
     }
 }
 

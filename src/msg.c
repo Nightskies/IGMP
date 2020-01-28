@@ -49,7 +49,7 @@ int accept_query(struct host * _host)
     // General query
     if (ip_hdr->daddr == parse_to_ip(ALLHOSTS_GROUP))
     {
-        int i, n, tfd;
+        int n, tfd;
 
         if ((n = num_group(_host)) == 0)
             return false;
@@ -68,9 +68,9 @@ int accept_query(struct host * _host)
 
         struct group_list * next = NULL;
 
-        struct pollfd fds;
+        struct pollfd_list * nextfd = _host->_delay->fds;
 
-        for (next = _host->head, i = 0; next != NULL; next = next->next, i++)
+        for (next = _host->head; next != NULL; next = next->next, nextfd = nextfd->next)
         {
             if (next->data->timer_state == NOT_SET)
             {
@@ -78,10 +78,9 @@ int accept_query(struct host * _host)
                     SYS_ERROR("timerfd_create");
 	            
                 ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
-                next->data->id = _host->_delay->n++;
                 _host->_delay->reports++;
 
-                if (timerfd_settime(tfd, 0, &ts, NULL) < 0) 
+                if (timerfd_settime(tfd, 0, &ts, NULL) < 0)
                     SYS_ERROR("timerfd_settime");
 
                 if (Debug)
@@ -90,16 +89,18 @@ int accept_query(struct host * _host)
                         parse_to_str(next->data->group), ts.it_value.tv_sec);
                     fflush(stdout);
                 }
-                fds.fd = tfd;
-                fds.events = POLLIN;
+
+                nextfd->data->fd.fd = tfd;
+                nextfd->data->fd.events = POLLIN;
 
                 next->data->timer_state = SET;
-                _host->_delay->fds[next->data->id] = fds;
             }
             else
             {
                 int max_resp_time = igmp_hdr->code / 10; // in sec
-                tfd = _host->_delay->fds[next->data->id].fd;
+                struct pollfd_list * elem = NULL;
+                elem = find_fd_by_id(_host->_delay, next->data->id);
+                tfd = elem->data->fd.fd;
 
                 if (-1 == timerfd_gettime(tfd, &ts))
                     SYS_ERROR("timerfd_gettime");
@@ -132,10 +133,10 @@ int accept_query(struct host * _host)
             struct itimerspec ts;
             memset(&ts, 0, sizeof(struct itimerspec));
 
-            struct pollfd fds;
-
             if (!_host->_delay->timers_status)
                 _host->_delay->timers_status = true;
+
+            struct pollfd_list * nextfd = _host->_delay->fds;
 
             int tfd;
 
@@ -145,7 +146,6 @@ int accept_query(struct host * _host)
                     SYS_ERROR("timerfd_create");
 
                 ts.it_value.tv_sec = get_rand_num(igmp_hdr->code);
-                next->data->id = _host->_delay->n++;
                 _host->_delay->reports++;
 
                 if (-1 == timerfd_settime(tfd, 0, &ts, NULL)) 
@@ -157,16 +157,18 @@ int accept_query(struct host * _host)
                         parse_to_str(next->data->group), ts.it_value.tv_sec);
                     fflush(stdout);
                 }
-                fds.fd = tfd;
-                fds.events = POLLIN;  
+                
+                nextfd->data->fd.fd = tfd;
+                nextfd->data->fd.events = POLLIN;
 
                 next->data->timer_state = SET;
-                _host->_delay->fds[next->data->id] = fds;
             }
             else
             {   
                 int max_resp_time = igmp_hdr->code / 10; // in sec
-                tfd = _host->_delay->fds[next->data->id].fd;
+                struct pollfd_list * elem = NULL;
+                elem = find_fd_by_id(_host->_delay, next->data->id);
+                tfd = elem->data->fd.fd;
 
                 if (-1 == timerfd_gettime(tfd, &ts))
                     SYS_ERROR("timerfd_gettime");
@@ -200,6 +202,10 @@ void send_leave_group(struct host * _host, const uint32_t group)
         SYS_ERROR("sendto");
     
     printf(STYLE_GREEN_BOLD "\nsent <leave group> to [%s]" STYLE_RESET , ALLRTRS_GROUP);
+
+    struct group_list * elem = NULL;
+    elem = find_by_group(_host, group);
+    pop_fd(_host->_delay, elem->data->id);
 
     pop(_host, group);
     free(packet);
